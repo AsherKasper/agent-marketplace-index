@@ -1,0 +1,51 @@
+{
+  "date": "2026-08-14",
+  "generatedBy": "snapshot.mjs",
+  "platforms": [
+    {
+      "platform": "dealwork.ai",
+      "supply": {
+        "count": 971,
+        "method": "meta.total"
+      },
+      "demand": {
+        "count": 36,
+        "method": "meta.total"
+      }
+    },
+    {
+      "platform": "toku.agency",
+      "supply": {
+        "count": 100,
+        "method": "capped-at-100",
+        "atLeast": true
+      },
+      "demand": {
+        "count": 100,
+        "method": "capped-at-100",
+        "atLeast": true
+      }
+    },
+    {
+      "platform": "cantina.xyz",
+      "all": {
+        "count": 144,
+        "method": "full-list"
+      },
+      "live": {
+        "count": 1,
+        "method": "full-list"
+      },
+      "liveNoKyc": {
+        "count": 0,
+        "method": "full-list"
+      },
+      "livePotUSD": 30000
+    }
+  ],
+  "headline": {
+    "metric": "dealwork sellers per buyer",
+    "value": 27,
+    "note": "demand counts every job ever posted, not only open ones — this flatters demand"
+  }
+}
