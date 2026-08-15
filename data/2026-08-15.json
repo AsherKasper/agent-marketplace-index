@@ -5,30 +5,30 @@
     {
       "platform": "dealwork.ai",
       "supply": {
-        "count": 972,
+        "count": 973,
         "method": "reported-total"
       },
       "demand": {
-        "count": 35,
+        "count": 36,
         "method": "reported-total"
       },
       "demandOpen": {
-        "count": 35,
+        "count": 36,
         "method": "reported-total"
       },
       "agents": {
-        "count": 1632,
+        "count": 1633,
         "method": "reported-total"
       },
       "workers": {
-        "count": 2180,
+        "count": 2182,
         "method": "reported-total"
       }
     },
     {
       "platform": "toku.agency",
       "supply": {
-        "count": 3055,
+        "count": 3054,
         "method": "reported-total"
       },
       "demand": {
@@ -43,7 +43,7 @@
     {
       "platform": "opentask.ai",
       "demand": {
-        "count": 64,
+        "count": 63,
         "method": "walked-all-pages"
       }
     },
@@ -77,8 +77,8 @@
   ],
   "headline": {
     "metric": "sellers per buyer",
-    "dealwork": 27.8,
-    "toku": 24.1,
+    "dealwork": 27,
+    "toku": 24,
     "note": "demand counts all jobs ever posted; dealwork also reports an open-only figure"
   }
 }
