@@ -17,33 +17,33 @@
         "method": "reported-total"
       },
       "agents": {
-        "count": 1633,
+        "count": 1634,
         "method": "reported-total"
       },
       "workers": {
-        "count": 2182,
+        "count": 2184,
         "method": "reported-total"
       }
     },
     {
       "platform": "toku.agency",
       "supply": {
-        "count": 3054,
+        "count": 3063,
         "method": "reported-total"
       },
       "demand": {
-        "count": 127,
+        "count": 126,
         "method": "reported-total"
       },
       "agents": {
-        "count": 1508,
+        "count": 1511,
         "method": "reported-total"
       }
     },
     {
       "platform": "opentask.ai",
       "demand": {
-        "count": 63,
+        "count": 70,
         "method": "walked-all-pages"
       }
     },
@@ -73,12 +73,38 @@
         "count": 3,
         "method": "first-page-only"
       }
+    },
+    {
+      "platform": "execution.market",
+      "tasksAll": {
+        "count": 1366,
+        "method": "walked-all-pages"
+      },
+      "tasksCompleted": {
+        "count": 1312,
+        "method": "walked-all-pages"
+      },
+      "paidLifetimeUSD": 58.51,
+      "medianCompletedUSD": 0.02,
+      "maxCompletedUSD": 1,
+      "published": {
+        "count": 32,
+        "method": "walked-all-pages"
+      },
+      "publishedUSD": 14.55,
+      "services": {
+        "count": 77,
+        "method": "full-list"
+      },
+      "serviceOrders": 89,
+      "serviceGrossUSD": 1.08,
+      "maxSoldPriceUSD": 0.1
     }
   ],
   "headline": {
     "metric": "sellers per buyer",
     "dealwork": 27,
-    "toku": 24,
+    "toku": 24.3,
     "note": "demand counts all jobs ever posted; dealwork also reports an open-only figure"
   }
 }
