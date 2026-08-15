@@ -55,14 +55,22 @@ async function total(url, pick) {
 
 async function dealwork() {
   const m = (j) => j?.meta?.total;
-  const [listings, jobs, jobsOpen, agents, workers] = await Promise.all([
+  // CORRECTION 2026-08-15: this used `?state=open`. There is no `state` parameter —
+  // it was silently ignored and returned the unfiltered total, so the column labelled
+  // "open jobs" was publishing "all jobs" for two days. The correct key is `status`,
+  // and "open" is not a value: jobs are `posted` | `bidding` | `completed`.
+  // The platform has since shipped `meta.ignored_params` so an unknown filter is
+  // visible instead of silently returning the default set.
+  const [listings, jobs, posted, bidding, completed, agents, workers] = await Promise.all([
     total("https://dealwork.ai/api/v1/listings?per_page=1", m),
     total("https://dealwork.ai/api/v1/jobs?per_page=1", m),
-    total("https://dealwork.ai/api/v1/jobs?per_page=1&state=open", m),
+    total("https://dealwork.ai/api/v1/jobs?per_page=1&status=posted", m),
+    total("https://dealwork.ai/api/v1/jobs?per_page=1&status=bidding", m),
+    total("https://dealwork.ai/api/v1/jobs?per_page=1&status=completed", m),
     total("https://dealwork.ai/api/v1/agents?per_page=1", m),
     total("https://dealwork.ai/api/v1/workers?per_page=1", m),
   ]);
-  return { platform: "dealwork.ai", supply: listings, demand: jobs, demandOpen: jobsOpen, agents, workers };
+  return { platform: "dealwork.ai", supply: listings, demand: jobs, posted, bidding, completed, agents, workers };
 }
 
 async function toku() {
@@ -193,12 +201,13 @@ const ct = platforms.find((p) => p.platform === "cantina.xyz");
 const sh = platforms.find((p) => p.platform === "sherlock.xyz");
 const em = platforms.find((p) => p.platform === "execution.market");
 const csv = join(DATA, "index.csv");
-const header = "date,dw_listings,dw_jobs,dw_jobs_open,dw_ratio,dw_agents,dw_workers,toku_services,toku_jobs,toku_ratio,toku_agents,ot_tasks,cantina_live,cantina_live_nokyc,cantina_live_pot_usd,sherlock_contests,em_tasks,em_completed,em_paid_lifetime_usd,em_median_completed_usd,em_max_completed_usd,em_published,em_published_usd,em_services,em_service_orders,em_service_gross_usd,em_max_sold_price_usd\n";
+const header = "date,dw_listings,dw_jobs,dw_posted,dw_bidding,dw_completed,dw_ratio,dw_agents,dw_workers,toku_services,toku_jobs,toku_ratio,toku_agents,ot_tasks,cantina_live,cantina_live_nokyc,cantina_live_pot_usd,sherlock_contests,em_tasks,em_completed,em_paid_lifetime_usd,em_median_completed_usd,em_max_completed_usd,em_published,em_published_usd,em_services,em_service_orders,em_service_gross_usd,em_max_sold_price_usd\n";
 if (!existsSync(csv)) writeFileSync(csv, header);
 const c = (v) => (v == null ? "" : v);
 const row = [
   DATE,
-  c(dw?.supply?.count), c(dw?.demand?.count), c(dw?.demandOpen?.count), c(snap.headline.dealwork),
+  c(dw?.supply?.count), c(dw?.demand?.count), c(dw?.posted?.count), c(dw?.bidding?.count),
+  c(dw?.completed?.count), c(snap.headline.dealwork),
   c(dw?.agents?.count), c(dw?.workers?.count),
   c(tk?.supply?.count), c(tk?.demand?.count), c(snap.headline.toku), c(tk?.agents?.count),
   c(ot?.demand?.count),
