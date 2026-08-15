@@ -189,6 +189,41 @@ async function executionMarket() {
   return out;
 }
 
+/**
+ * x402 via Agentic.Market — the only source found that reports REAL PAID CALLS rather
+ * than listings or offers. This is where the agent economy actually transacts: agents
+ * buying inputs (search, data, inference) at API-call prices. Added 2026-08-15 after
+ * this data falsified the report's previous headline.
+ */
+async function x402() {
+  const out = { platform: "x402 (agentic.market)" };
+  const svcs = [];
+  for (let off = 0; off < 5000; off += 100) {
+    const r = await getJSON(`https://api.agentic.market/v1/services?limit=100&offset=${off}`);
+    if (r.error) { out.error = r.error; break; }
+    const rows = r.json?.services ?? [];
+    svcs.push(...rows);
+    if (rows.length < 100) break;
+  }
+  if (!svcs.length) return out;
+
+  const per = svcs.map((s) => ({
+    price: Number(s.priceSummary?.avgCostPerTransaction ?? 0),
+    calls: (s.endpoints ?? []).reduce((a, e) => a + Number(e?.quality?.l30DaysTotalCalls ?? 0), 0),
+  }));
+  out.services = counted(svcs.length, "walked-all-pages");
+  out.servicesWithCalls = counted(per.filter((r) => r.calls > 0).length, "walked-all-pages");
+  out.calls30d = per.reduce((a, r) => a + r.calls, 0);
+  out.gross30dUSD = +per.reduce((a, r) => a + r.calls * r.price, 0).toFixed(2);
+  // A single service priced at ~$5,000/call has repeatedly been ~69% of gross. Report
+  // both, because quoting only the headline would overstate this market ~3x.
+  out.gross30dExOutliersUSD = +per.filter((r) => r.price < 1000)
+    .reduce((a, r) => a + r.calls * r.price, 0).toFixed(2);
+  const priced = per.map((r) => r.price).filter((p) => p > 0).sort((a, b) => a - b);
+  out.medianPriceUSD = priced.length ? priced[Math.floor(priced.length / 2)] : null;
+  return out;
+}
+
 async function sherlock() {
   const r = await getJSON("https://mainnet-contest.sherlock.xyz/contests");
   if (r.error) return { platform: "sherlock.xyz", error: r.error };
@@ -201,7 +236,7 @@ async function sherlock() {
   };
 }
 
-const platforms = await Promise.all([dealwork(), toku(), opentask(), cantina(), sherlock(), executionMarket()]);
+const platforms = await Promise.all([dealwork(), toku(), opentask(), cantina(), sherlock(), executionMarket(), x402()]);
 const snap = { date: DATE, generatedBy: "snapshot.mjs", platforms };
 
 const ratio = (p) =>
@@ -225,8 +260,9 @@ const ot = platforms.find((p) => p.platform === "opentask.ai");
 const ct = platforms.find((p) => p.platform === "cantina.xyz");
 const sh = platforms.find((p) => p.platform === "sherlock.xyz");
 const em = platforms.find((p) => p.platform === "execution.market");
+const xf = platforms.find((p) => p.platform === "x402 (agentic.market)");
 const csv = join(DATA, "index.csv");
-const header = "date,dw_listings,dw_jobs,dw_posted,dw_bidding,dw_completed,dw_completed_value_usd,dw_completed_median_usd,dw_completed_max_usd,dw_days_since_last_completion,dw_ratio,dw_agents,dw_workers,toku_services,toku_jobs,toku_ratio,toku_agents,ot_tasks,cantina_live,cantina_live_nokyc,cantina_live_pot_usd,sherlock_contests,em_tasks,em_completed,em_paid_lifetime_usd,em_median_completed_usd,em_max_completed_usd,em_published,em_published_usd,em_services,em_service_orders,em_service_gross_usd,em_max_sold_price_usd\n";
+const header = "date,dw_listings,dw_jobs,dw_posted,dw_bidding,dw_completed,dw_completed_value_usd,dw_completed_median_usd,dw_completed_max_usd,dw_days_since_last_completion,dw_ratio,dw_agents,dw_workers,toku_services,toku_jobs,toku_ratio,toku_agents,ot_tasks,cantina_live,cantina_live_nokyc,cantina_live_pot_usd,sherlock_contests,em_tasks,em_completed,em_paid_lifetime_usd,em_median_completed_usd,em_max_completed_usd,em_published,em_published_usd,em_services,em_service_orders,em_service_gross_usd,em_max_sold_price_usd,x402_services,x402_services_with_calls,x402_calls_30d,x402_gross_30d_usd,x402_gross_30d_ex_outlier_usd,x402_median_price_usd\n";
 if (!existsSync(csv)) writeFileSync(csv, header);
 const c = (v) => (v == null ? "" : v);
 const row = [
@@ -244,6 +280,9 @@ const row = [
   c(em?.tasksAll?.count), c(em?.tasksCompleted?.count), c(em?.paidLifetimeUSD),
   c(em?.medianCompletedUSD), c(em?.maxCompletedUSD), c(em?.published?.count), c(em?.publishedUSD),
   c(em?.services?.count), c(em?.serviceOrders), c(em?.serviceGrossUSD), c(em?.maxSoldPriceUSD),
+  // x402 — real paid calls. This is where the agent economy actually transacts.
+  c(xf?.services?.count), c(xf?.servicesWithCalls?.count), c(xf?.calls30d),
+  c(xf?.gross30dUSD), c(xf?.gross30dExOutliersUSD), c(xf?.medianPriceUSD),
 ].join(",") + "\n";
 
 // A schema change must not silently corrupt the history: if the header on disk is an
