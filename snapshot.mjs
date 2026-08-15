@@ -108,6 +108,54 @@ async function cantina() {
   };
 }
 
+/**
+ * execution.market — the only platform found that exposes SETTLED volume, not just
+ * listings. Supply and demand counts say what is advertised; these say what was paid.
+ * All endpoints are public, so this keeps the collector credential-free.
+ */
+async function executionMarket() {
+  const BASE = "https://api.execution.market";
+  const out = { platform: "execution.market" };
+
+  // Walk the full task history rather than sampling — it is ~14 pages.
+  const tasks = [];
+  for (let off = 0; off < 5000; off += 100) {
+    const r = await getJSON(`${BASE}/api/v1/tasks?limit=100&offset=${off}`);
+    if (r.error) { out.error = r.error; break; }
+    const page = r.json?.tasks ?? [];
+    tasks.push(...page);
+    if (page.length < 100) break;
+  }
+  if (tasks.length) {
+    const done = tasks.filter((t) => t.status === "completed");
+    const live = tasks.filter((t) => t.status === "published");
+    const paid = done.reduce((s, t) => s + Number(t.bounty_usd || 0), 0);
+    const sizes = done.map((t) => Number(t.bounty_usd || 0)).sort((a, b) => a - b);
+    out.tasksAll = counted(tasks.length, "walked-all-pages");
+    out.tasksCompleted = counted(done.length, "walked-all-pages");
+    // The headline: everything this marketplace has ever actually paid out.
+    out.paidLifetimeUSD = +paid.toFixed(2);
+    out.medianCompletedUSD = sizes.length ? sizes[Math.floor(sizes.length / 2)] : null;
+    out.maxCompletedUSD = sizes.length ? sizes[sizes.length - 1] : null;
+    out.published = counted(live.length, "walked-all-pages");
+    out.publishedUSD = +live.reduce((s, t) => s + Number(t.bounty_usd || 0), 0).toFixed(2);
+  }
+
+  const s = await getJSON(`${BASE}/api/v1/services?limit=100`);
+  if (!s.error) {
+    const ls = s.json?.listings ?? [];
+    const orders = ls.reduce((a, x) => a + Number(x.orders_count || 0), 0);
+    const gross = ls.reduce((a, x) => a + Number(x.orders_count || 0) * Number(x.unit_price_usd || 0), 0);
+    const sold = ls.filter((x) => Number(x.orders_count || 0) > 0).map((x) => Number(x.unit_price_usd || 0));
+    out.services = counted(ls.length, "full-list");
+    out.serviceOrders = orders;
+    out.serviceGrossUSD = +gross.toFixed(2);
+    // The ceiling: the dearest thing anyone has actually bought.
+    out.maxSoldPriceUSD = sold.length ? Math.max(...sold) : null;
+  }
+  return out;
+}
+
 async function sherlock() {
   const r = await getJSON("https://mainnet-contest.sherlock.xyz/contests");
   if (r.error) return { platform: "sherlock.xyz", error: r.error };
@@ -120,7 +168,7 @@ async function sherlock() {
   };
 }
 
-const platforms = await Promise.all([dealwork(), toku(), opentask(), cantina(), sherlock()]);
+const platforms = await Promise.all([dealwork(), toku(), opentask(), cantina(), sherlock(), executionMarket()]);
 const snap = { date: DATE, generatedBy: "snapshot.mjs", platforms };
 
 const ratio = (p) =>
@@ -143,8 +191,9 @@ writeFileSync(join(DATA, `${DATE}.json`), JSON.stringify(snap, null, 2) + "\n");
 const ot = platforms.find((p) => p.platform === "opentask.ai");
 const ct = platforms.find((p) => p.platform === "cantina.xyz");
 const sh = platforms.find((p) => p.platform === "sherlock.xyz");
+const em = platforms.find((p) => p.platform === "execution.market");
 const csv = join(DATA, "index.csv");
-const header = "date,dw_listings,dw_jobs,dw_jobs_open,dw_ratio,dw_agents,dw_workers,toku_services,toku_jobs,toku_ratio,toku_agents,ot_tasks,cantina_live,cantina_live_nokyc,cantina_live_pot_usd,sherlock_contests\n";
+const header = "date,dw_listings,dw_jobs,dw_jobs_open,dw_ratio,dw_agents,dw_workers,toku_services,toku_jobs,toku_ratio,toku_agents,ot_tasks,cantina_live,cantina_live_nokyc,cantina_live_pot_usd,sherlock_contests,em_tasks,em_completed,em_paid_lifetime_usd,em_median_completed_usd,em_max_completed_usd,em_published,em_published_usd,em_services,em_service_orders,em_service_gross_usd,em_max_sold_price_usd\n";
 if (!existsSync(csv)) writeFileSync(csv, header);
 const c = (v) => (v == null ? "" : v);
 const row = [
@@ -155,14 +204,25 @@ const row = [
   c(ot?.demand?.count),
   c(ct?.live?.count), c(ct?.liveNoKyc?.count), c(ct?.livePotUSD),
   c(sh?.all?.count),
+  // execution.market — the settlement columns. em_paid_lifetime_usd is the one that
+  // matters: everything this marketplace has ever actually paid out.
+  c(em?.tasksAll?.count), c(em?.tasksCompleted?.count), c(em?.paidLifetimeUSD),
+  c(em?.medianCompletedUSD), c(em?.maxCompletedUSD), c(em?.published?.count), c(em?.publishedUSD),
+  c(em?.services?.count), c(em?.serviceOrders), c(em?.serviceGrossUSD), c(em?.maxSoldPriceUSD),
 ].join(",") + "\n";
 
 // A schema change must not silently corrupt the history: if the header on disk is an
 // older shape, keep the old file and start a new one rather than appending mismatched rows.
 let body = readFileSync(csv, "utf8");
 if (!body.startsWith(header)) {
-  const archived = join(DATA, "index-v1.csv");
-  if (!existsSync(archived)) writeFileSync(archived, body);
+  // Archive to the next free version rather than a fixed name. v1 of this guard wrote
+  // only ever to index-v1.csv and skipped if it existed — so the SECOND schema change
+  // silently discarded the old rows instead of keeping them. A guard against silent
+  // data loss that itself loses data silently is worse than none.
+  let n = 1;
+  while (existsSync(join(DATA, `index-v${n}.csv`))) n++;
+  writeFileSync(join(DATA, `index-v${n}.csv`), body);
+  console.log(`schema changed — previous history archived as index-v${n}.csv`);
   writeFileSync(csv, header);
   body = header;
 }
