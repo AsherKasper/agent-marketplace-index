@@ -70,7 +70,32 @@ async function dealwork() {
     total("https://dealwork.ai/api/v1/agents?per_page=1", m),
     total("https://dealwork.ai/api/v1/workers?per_page=1", m),
   ]);
-  return { platform: "dealwork.ai", supply: listings, demand: jobs, posted, bidding, completed, agents, workers };
+  // Settled side. NOTE: these are ADVERTISED prices on completed jobs, not amounts paid.
+  // The platform's admin states median fixed price is $0.40 while median *paid* contract is
+  // $0.20, so actual settlement runs at roughly half of advertised. Recorded as advertised
+  // because that is what the API exposes; do not read it as revenue.
+  let completedValueUSD = null, completedMedianUSD = null, completedMaxUSD = null, completedFreshest = null;
+  const rows = [];
+  for (let p = 1; p <= 5; p++) {
+    const r = await getJSON(`https://dealwork.ai/api/v1/jobs?per_page=100&page=${p}&status=completed`);
+    if (r.error) break;
+    const d = r.json?.data ?? [];
+    rows.push(...d);
+    if (d.length < 100) break;
+  }
+  if (rows.length) {
+    const vals = rows.map((t) => Number(t.fixedPrice ?? t.budgetMax ?? t.budgetMin ?? 0))
+      .filter((v) => v > 0).sort((a, b) => a - b);
+    completedValueUSD = +vals.reduce((a, b) => a + b, 0).toFixed(2);
+    completedMedianUSD = vals[Math.floor(vals.length / 2)] ?? null;
+    completedMaxUSD = vals[vals.length - 1] ?? null;
+    // Days since the most recently touched completed job — the liveness signal.
+    completedFreshest = Math.min(...rows.map((t) =>
+      Math.floor((Date.now() - new Date(t.updatedAt ?? t.createdAt)) / 86400000)));
+  }
+
+  return { platform: "dealwork.ai", supply: listings, demand: jobs, posted, bidding, completed,
+    agents, workers, completedValueUSD, completedMedianUSD, completedMaxUSD, completedFreshestDays: completedFreshest };
 }
 
 async function toku() {
@@ -201,13 +226,14 @@ const ct = platforms.find((p) => p.platform === "cantina.xyz");
 const sh = platforms.find((p) => p.platform === "sherlock.xyz");
 const em = platforms.find((p) => p.platform === "execution.market");
 const csv = join(DATA, "index.csv");
-const header = "date,dw_listings,dw_jobs,dw_posted,dw_bidding,dw_completed,dw_ratio,dw_agents,dw_workers,toku_services,toku_jobs,toku_ratio,toku_agents,ot_tasks,cantina_live,cantina_live_nokyc,cantina_live_pot_usd,sherlock_contests,em_tasks,em_completed,em_paid_lifetime_usd,em_median_completed_usd,em_max_completed_usd,em_published,em_published_usd,em_services,em_service_orders,em_service_gross_usd,em_max_sold_price_usd\n";
+const header = "date,dw_listings,dw_jobs,dw_posted,dw_bidding,dw_completed,dw_completed_value_usd,dw_completed_median_usd,dw_completed_max_usd,dw_days_since_last_completion,dw_ratio,dw_agents,dw_workers,toku_services,toku_jobs,toku_ratio,toku_agents,ot_tasks,cantina_live,cantina_live_nokyc,cantina_live_pot_usd,sherlock_contests,em_tasks,em_completed,em_paid_lifetime_usd,em_median_completed_usd,em_max_completed_usd,em_published,em_published_usd,em_services,em_service_orders,em_service_gross_usd,em_max_sold_price_usd\n";
 if (!existsSync(csv)) writeFileSync(csv, header);
 const c = (v) => (v == null ? "" : v);
 const row = [
   DATE,
   c(dw?.supply?.count), c(dw?.demand?.count), c(dw?.posted?.count), c(dw?.bidding?.count),
-  c(dw?.completed?.count), c(snap.headline.dealwork),
+  c(dw?.completed?.count), c(dw?.completedValueUSD), c(dw?.completedMedianUSD),
+  c(dw?.completedMaxUSD), c(dw?.completedFreshestDays), c(snap.headline.dealwork),
   c(dw?.agents?.count), c(dw?.workers?.count),
   c(tk?.supply?.count), c(tk?.demand?.count), c(snap.headline.toku), c(tk?.agents?.count),
   c(ot?.demand?.count),
