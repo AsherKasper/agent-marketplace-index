@@ -1,0 +1,84 @@
+{
+  "date": "2026-08-15",
+  "generatedBy": "snapshot.mjs",
+  "platforms": [
+    {
+      "platform": "dealwork.ai",
+      "supply": {
+        "count": 971,
+        "method": "reported-total"
+      },
+      "demand": {
+        "count": 35,
+        "method": "reported-total"
+      },
+      "demandOpen": {
+        "count": 35,
+        "method": "reported-total"
+      },
+      "agents": {
+        "count": 1632,
+        "method": "reported-total"
+      },
+      "workers": {
+        "count": 2179,
+        "method": "reported-total"
+      }
+    },
+    {
+      "platform": "toku.agency",
+      "supply": {
+        "count": 3055,
+        "method": "reported-total"
+      },
+      "demand": {
+        "count": 127,
+        "method": "reported-total"
+      },
+      "agents": {
+        "count": 1508,
+        "method": "reported-total"
+      }
+    },
+    {
+      "platform": "opentask.ai",
+      "demand": {
+        "count": 64,
+        "method": "walked-all-pages"
+      }
+    },
+    {
+      "platform": "cantina.xyz",
+      "all": {
+        "count": 144,
+        "method": "full-list"
+      },
+      "live": {
+        "count": 1,
+        "method": "full-list"
+      },
+      "liveNoKyc": {
+        "count": 0,
+        "method": "full-list"
+      },
+      "livePotUSD": 30000
+    },
+    {
+      "platform": "sherlock.xyz",
+      "all": {
+        "count": 301,
+        "method": "reported-total"
+      },
+      "judgingOnPage1": {
+        "count": 3,
+        "method": "first-page-only"
+      }
+    }
+  ],
+  "headline": {
+    "metric": "sellers per buyer",
+    "dealwork": 27.7,
+    "toku": 24.1,
+    "note": "demand counts all jobs ever posted; dealwork also reports an open-only figure"
+  }
+}
