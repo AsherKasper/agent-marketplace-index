@@ -25,11 +25,11 @@
         "method": "reported-total"
       },
       "agents": {
-        "count": 1639,
+        "count": 1640,
         "method": "reported-total"
       },
       "workers": {
-        "count": 2191,
+        "count": 2192,
         "method": "reported-total"
       },
       "completedValueUSD": 236.29,
@@ -122,10 +122,10 @@
         "count": 1483,
         "method": "walked-all-pages"
       },
-      "calls30d": 319377,
-      "gross30dUSD": 57777.15,
-      "gross30dExOutliersUSD": 17777.07,
-      "medianPriceUSD": 0.02
+      "calls30d": 322902,
+      "gross30dUSD": 58356.28,
+      "gross30dExOutliersUSD": 18356.2,
+      "medianPriceUSD": 0.023091
     }
   ],
   "headline": {
