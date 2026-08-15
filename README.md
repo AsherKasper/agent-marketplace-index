@@ -31,29 +31,66 @@ The full write-up of the four days that prompted this is a separate repo:
 - [`data/index.csv`](data/index.csv) — one row per day, the whole history, sorted by date.
 - [`data/YYYY-MM-DD.json`](data/) — the full daily snapshot with provenance on every number.
 
+**33 columns.** The ones that matter most are the settlement columns — most agent-market data
+counts listings, which measures advertising. These count money.
+
+### What actually got paid
+
 | Column | Meaning |
 | --- | --- |
-| `dw_listings` | dealwork.ai service listings — agents offering to work (**supply**) |
-| `dw_jobs` / `dw_jobs_open` | dealwork.ai jobs, all-time and currently open (**demand**) |
+| `em_paid_lifetime_usd` | **execution.market's entire lifetime payout.** The single most useful number here |
+| `em_completed` / `em_tasks` | tasks completed / ever published |
+| `em_median_completed_usd` / `em_max_completed_usd` | typical and largest completed bounty |
+| `em_service_orders` / `em_service_gross_usd` | orders placed on the services side, and their gross |
+| `em_max_sold_price_usd` | **the dearest thing anyone has ever actually bought** |
+| `dw_completed` | dealwork jobs with at least one paid or completed contract |
+| `dw_completed_value_usd` | their total **advertised** price — *not* amount paid; see caveats |
+| `dw_completed_median_usd` / `dw_completed_max_usd` | typical and largest |
+| `dw_days_since_last_completion` | **days since anything last settled.** The liveness signal |
+
+### Supply and demand
+
+| Column | Meaning |
+| --- | --- |
+| `dw_listings` | dealwork service listings — agents offering to work (**supply**) |
+| `dw_jobs` | dealwork jobs, all statuses (**demand**) |
+| `dw_posted` / `dw_bidding` | live jobs by status |
 | `dw_ratio` | sellers per buyer |
 | `dw_agents` / `dw_workers` | registered agents and workers — supply-side depth |
-| `toku_services` / `toku_jobs` / `toku_ratio` | toku.agency, same three measures |
-| `toku_agents` | registered agents on toku |
+| `toku_services` / `toku_jobs` / `toku_ratio` / `toku_agents` | toku.agency, same measures |
 | `ot_tasks` | opentask.ai tasks, counted by walking every page |
+| `em_published` / `em_published_usd` | execution.market tasks open right now, and their value |
+
+### Competitions
+
+| Column | Meaning |
+| --- | --- |
 | `cantina_live` | live audit competitions on cantina.xyz |
 | `cantina_live_nokyc` | of those, how many an entrant can join **without identity verification** |
 | `cantina_live_pot_usd` | total prize money in live competitions |
 | `sherlock_contests` | contests listed on sherlock.xyz |
 
+> **Removed 2026-08-15: `dw_jobs_open`.** It queried `?state=open`, and there is no `state`
+> parameter — the filter was silently ignored and the column published the *unfiltered total* while
+> claiming to be open jobs. Replaced by `dw_posted` / `dw_bidding` / `dw_completed`, which use the
+> real `status` parameter. Prior history is preserved in `data/index-v*.csv` rather than rewritten.
+
 ### Two platforms, independently, say the same thing
 
 | | supply | demand | ratio |
 | --- | ---: | ---: | ---: |
-| dealwork.ai | 971 listings | 35 jobs | **27.7 : 1** |
-| toku.agency | 3,055 services | 127 jobs | **24.1 : 1** |
+| dealwork.ai | 981 listings | 36 jobs | **27.3 : 1** |
+| toku.agency | 3,071 services | 126 jobs | **24.4 : 1** |
 
 These are separate companies with separate APIs and no reason to agree. Both land near **25
 sellers per buyer**. That is the finding this index exists to track over time.
+
+**But the ratio is not the important number, and I had it as the headline for two days.** A board
+can have any ratio and still be alive if money moves. What settled the question was measuring
+payouts: execution.market has paid **$58.51 across 1,312 completed tasks** in its entire existence,
+the dearest thing anyone has ever bought there cost **$0.10**, and dealwork's last completion was
+**29 days ago**. Those columns were added on 2026-08-15 and are the reason this dataset is worth
+keeping.
 
 ### Correction: v1 of this collector undercounted toku by ~30×
 
