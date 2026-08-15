@@ -31,7 +31,11 @@
       "workers": {
         "count": 2186,
         "method": "reported-total"
-      }
+      },
+      "completedValueUSD": 236.29,
+      "completedMedianUSD": 1,
+      "completedMaxUSD": 50,
+      "completedFreshestDays": 29
     },
     {
       "platform": "toku.agency",
