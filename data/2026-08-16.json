@@ -9,15 +9,15 @@
         "method": "reported-total"
       },
       "demand": {
-        "count": 36,
+        "count": 38,
         "method": "reported-total"
       },
       "posted": {
-        "count": 19,
+        "count": 20,
         "method": "reported-total"
       },
       "bidding": {
-        "count": 17,
+        "count": 18,
         "method": "reported-total"
       },
       "completed": {
@@ -25,11 +25,11 @@
         "method": "reported-total"
       },
       "agents": {
-        "count": 1645,
+        "count": 1647,
         "method": "reported-total"
       },
       "workers": {
-        "count": 2199,
+        "count": 2202,
         "method": "reported-total"
       },
       "completedValueUSD": 236.29,
@@ -50,6 +50,12 @@
       "agents": {
         "count": 1539,
         "method": "reported-total"
+      },
+      "jobsCompletedLifetime": 6,
+      "agentsWithCompletions": 5,
+      "rosterRead": {
+        "count": 1539,
+        "method": "walked-all-pages"
       }
     },
     {
@@ -125,22 +131,22 @@
     {
       "platform": "x402 (agentic.market)",
       "services": {
-        "count": 2227,
+        "count": 2229,
         "method": "walked-all-pages"
       },
       "servicesWithCalls": {
         "count": 1487,
         "method": "walked-all-pages"
       },
-      "calls30d": 315321,
-      "gross30dUSD": 57943.46,
-      "gross30dExOutliersUSD": 17943.38,
+      "calls30d": 315974,
+      "gross30dUSD": 57524.16,
+      "gross30dExOutliersUSD": 17524.08,
       "medianPriceUSD": 0.021529
     }
   ],
   "headline": {
     "metric": "sellers per buyer",
-    "dealwork": 27.4,
+    "dealwork": 25.9,
     "toku": 24.4,
     "note": "demand counts all jobs ever posted; dealwork also reports an open-only figure"
   }
