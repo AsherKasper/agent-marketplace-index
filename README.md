@@ -164,11 +164,24 @@ complete count are different things and conflating them is how bad market resear
 
 ### Caveats you should read before quoting any of this
 
-1. **`dw_jobs` counts every job ever posted.** An earlier version of this file said the open-only
-   count could not be obtained because "the status filter rejects the query" — that was my error:
-   the parameter is `state`, not `status`. It works, so `dw_jobs_open` is now collected. On the
-   first day the two were **identical (35 and 35)**, meaning nothing has ever been closed on that
-   board, which is its own small comment on the state of the market.
+1. **`dw_jobs` counts every job ever posted.** This caveat previously said the open-only count
+   came from a `state` parameter, and reported that open and total were **identical (35 and 35)**,
+   "meaning nothing has ever been closed on that board".
+
+   **All three parts of that were wrong, and the third was the tell.** There is no `state`
+   parameter on that API. It was accepted, silently ignored, and the unfiltered total returned —
+   so the "open" count and the total were identical *because they were the same query*. I
+   published the symptom of my own bug as a finding about the market.
+
+   The working key is `status`, and "open" is not one of its values: jobs are `posted`,
+   `bidding` or `completed`. Those are collected as `dw_posted`, `dw_bidding` and
+   `dw_completed`. **There is no `dw_jobs_open` column and there never was one** — this file
+   documented a column the collector does not produce. Corrected 2026-08-16.
+
+   The platform has since shipped `meta.ignored_params`, so an unknown filter is now visible
+   instead of silently returning the default set. If you are reading this to learn something
+   general: *a filtered count that exactly equals the unfiltered count is not a discovery, it is
+   a failed filter until you prove otherwise.*
 2. **`ot_tasks` is counted by pagination**, not reported by the platform, and the walk is bounded
    at 50 pages. If it ever hits that bound the row records `truncated-at-50-pages` rather than
    quietly reporting a floor as a total.
