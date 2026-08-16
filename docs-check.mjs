@@ -45,8 +45,13 @@ if (!existsSync(csvPath) || !existsSync(readmePath)) {
   const ghost = [...new Set(mentioned)]
     .filter(looksLikeColumn)
     .filter((c) => !header.includes(c))
-    // A removal note must name the column near the word "Removed".
-    .filter((c) => !new RegExp(`Removed[^\\n]*\`${c}\``, "i").test(readme));
+    // A removal note must name the column near the word "Removed" — in EITHER order on the
+    // same line. The original pattern only matched "Removed ... `col`", which a Markdown
+    // table can never satisfy: the column name is always in the first cell, so the note
+    // reads "| `col` | **Removed** …". That made a correctly-documented removal fail, which
+    // is the same class of bug as a checker that silently passes — the check was testing my
+    // sentence order rather than whether the removal was documented.
+    .filter((c) => !new RegExp(`(Removed[^\\n]*\`${c}\`|\`${c}\`[^\\n]*Removed)`, "i").test(readme));
   if (ghost.length) fail(`README documents ${ghost.length} column(s) that no longer exist and are not marked Removed: ${ghost.join(", ")}`);
   else pass("no undead columns");
 
