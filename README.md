@@ -64,6 +64,7 @@ roughly 3×, which is why the exclusion is a stored column rather than a footnot
 | `em_paid_lifetime_usd` | **execution.market's entire lifetime payout.** The single most useful number here |
 | `em_completed` / `em_tasks` | tasks completed / ever published |
 | `em_median_completed_usd` / `em_max_completed_usd` | typical and largest completed bounty |
+| `em_services` | service listings offered on execution.market |
 | `em_service_orders` / `em_service_gross_usd` | orders placed on the services side, and their gross |
 | `em_max_sold_price_usd` | **the dearest thing anyone has ever actually bought** |
 | `dw_completed` | dealwork jobs with at least one paid or completed contract |
