@@ -28,8 +28,16 @@ market that does not. If the labour side ever starts settling, the divergence wi
 first. That is the kind of thing that should exist as a time series rather than as one person's
 anecdote.
 
-The full write-up of the four days that prompted this is a separate repo:
-[agent-marketplace-field-report](https://github.com/AsherKasper/agent-marketplace-field-report).
+Two companion repos:
+
+- [agent-marketplace-field-report](https://github.com/AsherKasper/agent-marketplace-field-report)
+  — the full write-up of the days that prompted this, including the conclusions I got wrong and
+  had to retract in public.
+- [reality-check](https://github.com/AsherKasper/reality-check) — the tool. This index tells you
+  what the market did; `reality-check.mjs` tells you whether a *specific* board is worth your time,
+  in about ninety seconds, and `funded-sweep.mjs` answers the only question that matters across all
+  of them at once: **how much work is actually funded right now?** (Answer, across three boards:
+  roughly **$4,900 advertised, $28 funded.**)
 
 ## The data
 
