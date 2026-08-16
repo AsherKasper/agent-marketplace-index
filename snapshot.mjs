@@ -107,7 +107,34 @@ async function toku() {
     total("https://www.toku.agency/api/agents/jobs?limit=1", t),
     total("https://www.toku.agency/api/agents?limit=1", t),
   ]);
-  return { platform: "toku.agency", supply: services, demand: jobs, agents };
+
+  // Added 2026-08-16. Until now this platform had supply, demand and a ratio but NO
+  // settlement column — so it could look busy forever. The agent directory exposes
+  // `jobsCompleted` per agent, which sums to a real lifetime completion count. Walking all
+  // ~1,539 agents is the only way to get it; there is no aggregate endpoint.
+  // The array key on this endpoint DEPENDS ON AUTH: `data` unauthenticated, `agents` with a
+  // bearer token. Same URL, same status, different shape. Read both — the first version of
+  // this read only `agents` and silently recorded 0 completions from 1,539 agents.
+  let completions = null, agentsWithAny = null;
+  const roster = [];
+  for (let off = 0; off < 3000; off += 100) {
+    const r = await getJSON(`https://www.toku.agency/api/agents?limit=100&offset=${off}`);
+    if (r.error) break;
+    const rows = r.json?.data ?? r.json?.agents ?? [];
+    roster.push(...rows);
+    if (rows.length < 100) break;
+  }
+  // Cross-check the walk against the endpoint's own total; a wrong key and an empty
+  // platform are indistinguishable without it.
+  if (agents?.count && roster.length && roster.length < agents.count * 0.9)
+    console.error(`  WARN toku roster: read ${roster.length} of ${agents.count} agents`);
+  if (roster.length) {
+    completions = roster.reduce((s, a) => s + Number(a.jobsCompleted || 0), 0);
+    agentsWithAny = roster.filter((a) => Number(a.jobsCompleted || 0) > 0).length;
+  }
+  return { platform: "toku.agency", supply: services, demand: jobs, agents,
+    jobsCompletedLifetime: completions, agentsWithCompletions: agentsWithAny,
+    rosterRead: counted(roster.length, "walked-all-pages") };
 }
 
 async function opentask() {
@@ -283,7 +310,7 @@ const sh = platforms.find((p) => p.platform === "sherlock.xyz");
 const em = platforms.find((p) => p.platform === "execution.market");
 const xf = platforms.find((p) => p.platform === "x402 (agentic.market)");
 const csv = join(DATA, "index.csv");
-const header = "date,dw_listings,dw_jobs,dw_posted,dw_bidding,dw_completed,dw_completed_value_usd,dw_completed_median_usd,dw_completed_max_usd,dw_days_since_last_completion,dw_ratio,dw_agents,dw_workers,toku_services,toku_jobs,toku_ratio,toku_agents,ot_tasks,cantina_live,cantina_live_nokyc,cantina_live_pot_usd,sherlock_contests,em_tasks_ever,em_tasks_listed,em_expired,em_cancelled,em_completion_rate_pct,em_completed,em_paid_lifetime_usd,em_test_tasks,em_test_paid_usd,em_real_paid_usd,em_median_completed_usd,em_max_completed_usd,em_published,em_published_usd,em_services,em_service_orders,em_service_gross_usd,em_max_sold_price_usd,x402_services,x402_services_with_calls,x402_calls_30d,x402_gross_30d_usd,x402_gross_30d_ex_outlier_usd,x402_median_price_usd\n";
+const header = "date,dw_listings,dw_jobs,dw_posted,dw_bidding,dw_completed,dw_completed_value_usd,dw_completed_median_usd,dw_completed_max_usd,dw_days_since_last_completion,dw_ratio,dw_agents,dw_workers,toku_services,toku_jobs,toku_ratio,toku_agents,toku_jobs_completed_lifetime,toku_agents_with_completions,ot_tasks,cantina_live,cantina_live_nokyc,cantina_live_pot_usd,sherlock_contests,em_tasks_ever,em_tasks_listed,em_expired,em_cancelled,em_completion_rate_pct,em_completed,em_paid_lifetime_usd,em_test_tasks,em_test_paid_usd,em_real_paid_usd,em_median_completed_usd,em_max_completed_usd,em_published,em_published_usd,em_services,em_service_orders,em_service_gross_usd,em_max_sold_price_usd,x402_services,x402_services_with_calls,x402_calls_30d,x402_gross_30d_usd,x402_gross_30d_ex_outlier_usd,x402_median_price_usd\n";
 if (!existsSync(csv)) writeFileSync(csv, header);
 const c = (v) => (v == null ? "" : v);
 const row = [
@@ -293,6 +320,7 @@ const row = [
   c(dw?.completedMaxUSD), c(dw?.completedFreshestDays), c(snap.headline.dealwork),
   c(dw?.agents?.count), c(dw?.workers?.count),
   c(tk?.supply?.count), c(tk?.demand?.count), c(snap.headline.toku), c(tk?.agents?.count),
+  c(tk?.jobsCompletedLifetime), c(tk?.agentsWithCompletions),
   c(ot?.demand?.count),
   c(ct?.live?.count), c(ct?.liveNoKyc?.count), c(ct?.livePotUSD),
   c(sh?.all?.count),
