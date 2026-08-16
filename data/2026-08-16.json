@@ -25,11 +25,11 @@
         "method": "reported-total"
       },
       "agents": {
-        "count": 1643,
+        "count": 1644,
         "method": "reported-total"
       },
       "workers": {
-        "count": 2197,
+        "count": 2198,
         "method": "reported-total"
       },
       "completedValueUSD": 236.29,
@@ -40,7 +40,7 @@
     {
       "platform": "toku.agency",
       "supply": {
-        "count": 3077,
+        "count": 3080,
         "method": "reported-total"
       },
       "demand": {
@@ -48,7 +48,7 @@
         "method": "reported-total"
       },
       "agents": {
-        "count": 1518,
+        "count": 1538,
         "method": "reported-total"
       }
     },
@@ -88,15 +88,25 @@
     },
     {
       "platform": "execution.market",
-      "tasksAll": {
+      "tasksEver": {
+        "count": 3918,
+        "method": "platform-metrics"
+      },
+      "expired": 1861,
+      "cancelled": 689,
+      "completionRatePct": 33.5,
+      "tasksListed": {
         "count": 1363,
-        "method": "walked-all-pages"
+        "method": "walked-all-pages; EXCLUDES expired+cancelled"
       },
       "tasksCompleted": {
         "count": 1312,
         "method": "walked-all-pages"
       },
       "paidLifetimeUSD": 58.51,
+      "testTasks": 222,
+      "testPaidUSD": 21.78,
+      "realPaidUSD": 36.73,
       "medianCompletedUSD": 0.02,
       "maxCompletedUSD": 1,
       "published": {
@@ -115,17 +125,17 @@
     {
       "platform": "x402 (agentic.market)",
       "services": {
-        "count": 2221,
+        "count": 2225,
         "method": "walked-all-pages"
       },
       "servicesWithCalls": {
         "count": 1484,
         "method": "walked-all-pages"
       },
-      "calls30d": 317309,
-      "gross30dUSD": 57414.95,
-      "gross30dExOutliersUSD": 17414.87,
-      "medianPriceUSD": 0.02
+      "calls30d": 311844,
+      "gross30dUSD": 57710.4,
+      "gross30dExOutliersUSD": 17710.32,
+      "medianPriceUSD": 0.021529
     }
   ],
   "headline": {
