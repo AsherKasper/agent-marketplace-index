@@ -159,15 +159,36 @@ async function executionMarket() {
     tasks.push(...page);
     if (page.length < 100) break;
   }
+  // CORRECTION 2026-08-16: `tasks.length` is NOT the task population and this column used
+  // to say it was. The list endpoint silently omits expired and cancelled tasks — it returns
+  // ~1,363 of ~3,918. Every em_tasks value recorded before this date is the size of the
+  // list, not the platform. The true population comes from the metrics endpoint below,
+  // which is a genuinely different source rather than the same one re-read.
+  const met = await getJSON(`${BASE}/api/v1/public/metrics`);
+  if (!met.error && met.json?.tasks) {
+    const m = met.json.tasks;
+    out.tasksEver = counted(m.total, "platform-metrics");
+    out.expired = m.expired;
+    out.cancelled = m.cancelled;
+    out.completionRatePct = m.total ? +((m.completed / m.total) * 100).toFixed(1) : null;
+  }
+
   if (tasks.length) {
     const done = tasks.filter((t) => t.status === "completed");
     const live = tasks.filter((t) => t.status === "published");
     const paid = done.reduce((s, t) => s + Number(t.bounty_usd || 0), 0);
     const sizes = done.map((t) => Number(t.bounty_usd || 0)).sort((a, b) => a - b);
-    out.tasksAll = counted(tasks.length, "walked-all-pages");
+    out.tasksListed = counted(tasks.length, "walked-all-pages; EXCLUDES expired+cancelled");
     out.tasksCompleted = counted(done.length, "walked-all-pages");
     // The headline: everything this marketplace has ever actually paid out.
     out.paidLifetimeUSD = +paid.toFixed(2);
+    // Of which: rows that LABEL THEMSELVES as test/demo runs. Matched on the bracket prefix
+    // the rows declare, never on inference about who posted them. Reported separately so the
+    // gross figure stays honest and the winnable figure stays visible.
+    const tests = done.filter((t) => /^\s*\[(MULTICHAIN GF|GOLDEN FLOW)/i.test(t.title ?? ""));
+    out.testTasks = tests.length;
+    out.testPaidUSD = +tests.reduce((s, t) => s + Number(t.bounty_usd || 0), 0).toFixed(2);
+    out.realPaidUSD = +(paid - out.testPaidUSD).toFixed(2);
     out.medianCompletedUSD = sizes.length ? sizes[Math.floor(sizes.length / 2)] : null;
     out.maxCompletedUSD = sizes.length ? sizes[sizes.length - 1] : null;
     out.published = counted(live.length, "walked-all-pages");
@@ -262,7 +283,7 @@ const sh = platforms.find((p) => p.platform === "sherlock.xyz");
 const em = platforms.find((p) => p.platform === "execution.market");
 const xf = platforms.find((p) => p.platform === "x402 (agentic.market)");
 const csv = join(DATA, "index.csv");
-const header = "date,dw_listings,dw_jobs,dw_posted,dw_bidding,dw_completed,dw_completed_value_usd,dw_completed_median_usd,dw_completed_max_usd,dw_days_since_last_completion,dw_ratio,dw_agents,dw_workers,toku_services,toku_jobs,toku_ratio,toku_agents,ot_tasks,cantina_live,cantina_live_nokyc,cantina_live_pot_usd,sherlock_contests,em_tasks,em_completed,em_paid_lifetime_usd,em_median_completed_usd,em_max_completed_usd,em_published,em_published_usd,em_services,em_service_orders,em_service_gross_usd,em_max_sold_price_usd,x402_services,x402_services_with_calls,x402_calls_30d,x402_gross_30d_usd,x402_gross_30d_ex_outlier_usd,x402_median_price_usd\n";
+const header = "date,dw_listings,dw_jobs,dw_posted,dw_bidding,dw_completed,dw_completed_value_usd,dw_completed_median_usd,dw_completed_max_usd,dw_days_since_last_completion,dw_ratio,dw_agents,dw_workers,toku_services,toku_jobs,toku_ratio,toku_agents,ot_tasks,cantina_live,cantina_live_nokyc,cantina_live_pot_usd,sherlock_contests,em_tasks_ever,em_tasks_listed,em_expired,em_cancelled,em_completion_rate_pct,em_completed,em_paid_lifetime_usd,em_test_tasks,em_test_paid_usd,em_real_paid_usd,em_median_completed_usd,em_max_completed_usd,em_published,em_published_usd,em_services,em_service_orders,em_service_gross_usd,em_max_sold_price_usd,x402_services,x402_services_with_calls,x402_calls_30d,x402_gross_30d_usd,x402_gross_30d_ex_outlier_usd,x402_median_price_usd\n";
 if (!existsSync(csv)) writeFileSync(csv, header);
 const c = (v) => (v == null ? "" : v);
 const row = [
@@ -277,7 +298,9 @@ const row = [
   c(sh?.all?.count),
   // execution.market — the settlement columns. em_paid_lifetime_usd is the one that
   // matters: everything this marketplace has ever actually paid out.
-  c(em?.tasksAll?.count), c(em?.tasksCompleted?.count), c(em?.paidLifetimeUSD),
+  c(em?.tasksEver?.count), c(em?.tasksListed?.count), c(em?.expired), c(em?.cancelled),
+  c(em?.completionRatePct), c(em?.tasksCompleted?.count), c(em?.paidLifetimeUSD),
+  c(em?.testTasks), c(em?.testPaidUSD), c(em?.realPaidUSD),
   c(em?.medianCompletedUSD), c(em?.maxCompletedUSD), c(em?.published?.count), c(em?.publishedUSD),
   c(em?.services?.count), c(em?.serviceOrders), c(em?.serviceGrossUSD), c(em?.maxSoldPriceUSD),
   // x402 — real paid calls. This is where the agent economy actually transacts.
