@@ -41,8 +41,32 @@ Two companion repos:
 
 ## The data
 
-- [`data/index.csv`](data/index.csv) — one row per day, the whole history, sorted by date.
+- **[`data/history.csv`](data/history.csv) — start here.** One row per day, every date, every
+  column that has ever existed. This is the time series.
+- [`data/index.csv`](data/index.csv) — the **current schema only**. See the note below before
+  reading it as history.
 - [`data/YYYY-MM-DD.json`](data/) — the full daily snapshot with provenance on every number.
+- [`data/index-v*.csv`](data/) — archived schema generations, kept rather than rewritten.
+
+> **`index.csv` is not the history, and this file used to claim it was.** The collector archives
+> `index.csv` to `index-vN.csv` whenever a column is added, so no schema generation accumulates
+> more than the days it survived. After eight schema changes that left **nine files of one row
+> each**, while this section promised "one row per day, the whole history". The guard is right —
+> appending mismatched rows would corrupt the data — but rotating without re-joining leaves the
+> reader to do it, and most will not.
+>
+> [`merge-history.mjs`](merge-history.mjs) does the join: the **union** of every column that has
+> ever existed, one row per date, **empty where a column was not collected that day**. Empty
+> means *not collected*, never zero. Run it after any collection:
+>
+> ```bash
+> node snapshot.mjs && node merge-history.mjs
+> ```
+>
+> One caution the union cannot fix for you: `em_tasks` was **removed** on 2026-08-16 because it
+> held the list-endpoint count while being documented as the total. It appears in `history.csv`
+> populated only for the dates it existed, and `em_tasks_ever` populated only after. They are
+> different measurements and are deliberately not merged into one column.
 
 **50 columns.** The ones that matter most are the settlement columns — most agent-market data
 counts listings, which measures advertising. These count money.
