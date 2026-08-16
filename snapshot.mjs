@@ -132,8 +132,28 @@ async function toku() {
     completions = roster.reduce((s, a) => s + Number(a.jobsCompleted || 0), 0);
     agentsWithAny = roster.filter((a) => Number(a.jobsCompleted || 0) > 0).length;
   }
+
+  // Effort absorbed vs work converted. Completions alone understate how much labour a board
+  // consumes: every post here carries bids, so `bidCount` summed is the number of times an
+  // agent wrote a proposal. Against lifetime completions it gives bids-per-completion, which
+  // is the honest cost of participating.
+  let bidsPlaced = null, postsWithBids = null;
+  const posts = [];
+  for (let off = 0; off < 500; off += 100) {
+    const r = await getJSON(`https://www.toku.agency/api/agents/jobs?limit=100&offset=${off}`);
+    if (r.error) break;
+    const rows = r.json?.jobPosts ?? [];
+    posts.push(...rows);
+    if (rows.length < 100) break;
+  }
+  if (posts.length) {
+    bidsPlaced = posts.reduce((s, p) => s + Number(p.bidCount || 0), 0);
+    postsWithBids = posts.filter((p) => Number(p.bidCount || 0) > 0).length;
+  }
   return { platform: "toku.agency", supply: services, demand: jobs, agents,
     jobsCompletedLifetime: completions, agentsWithCompletions: agentsWithAny,
+    bidsPlaced, postsWithBids,
+    bidsPerCompletion: (bidsPlaced && completions) ? +(bidsPlaced / completions).toFixed(0) : null,
     rosterRead: counted(roster.length, "walked-all-pages") };
 }
 
@@ -310,7 +330,7 @@ const sh = platforms.find((p) => p.platform === "sherlock.xyz");
 const em = platforms.find((p) => p.platform === "execution.market");
 const xf = platforms.find((p) => p.platform === "x402 (agentic.market)");
 const csv = join(DATA, "index.csv");
-const header = "date,dw_listings,dw_jobs,dw_posted,dw_bidding,dw_completed,dw_completed_value_usd,dw_completed_median_usd,dw_completed_max_usd,dw_days_since_last_completion,dw_ratio,dw_agents,dw_workers,toku_services,toku_jobs,toku_ratio,toku_agents,toku_jobs_completed_lifetime,toku_agents_with_completions,ot_tasks,cantina_live,cantina_live_nokyc,cantina_live_pot_usd,sherlock_contests,em_tasks_ever,em_tasks_listed,em_expired,em_cancelled,em_completion_rate_pct,em_completed,em_paid_lifetime_usd,em_test_tasks,em_test_paid_usd,em_real_paid_usd,em_median_completed_usd,em_max_completed_usd,em_published,em_published_usd,em_services,em_service_orders,em_service_gross_usd,em_max_sold_price_usd,x402_services,x402_services_with_calls,x402_calls_30d,x402_gross_30d_usd,x402_gross_30d_ex_outlier_usd,x402_median_price_usd\n";
+const header = "date,dw_listings,dw_jobs,dw_posted,dw_bidding,dw_completed,dw_completed_value_usd,dw_completed_median_usd,dw_completed_max_usd,dw_days_since_last_completion,dw_ratio,dw_agents,dw_workers,toku_services,toku_jobs,toku_ratio,toku_agents,toku_jobs_completed_lifetime,toku_agents_with_completions,toku_bids_placed,toku_bids_per_completion,ot_tasks,cantina_live,cantina_live_nokyc,cantina_live_pot_usd,sherlock_contests,em_tasks_ever,em_tasks_listed,em_expired,em_cancelled,em_completion_rate_pct,em_completed,em_paid_lifetime_usd,em_test_tasks,em_test_paid_usd,em_real_paid_usd,em_median_completed_usd,em_max_completed_usd,em_published,em_published_usd,em_services,em_service_orders,em_service_gross_usd,em_max_sold_price_usd,x402_services,x402_services_with_calls,x402_calls_30d,x402_gross_30d_usd,x402_gross_30d_ex_outlier_usd,x402_median_price_usd\n";
 if (!existsSync(csv)) writeFileSync(csv, header);
 const c = (v) => (v == null ? "" : v);
 const row = [
@@ -321,6 +341,7 @@ const row = [
   c(dw?.agents?.count), c(dw?.workers?.count),
   c(tk?.supply?.count), c(tk?.demand?.count), c(snap.headline.toku), c(tk?.agents?.count),
   c(tk?.jobsCompletedLifetime), c(tk?.agentsWithCompletions),
+  c(tk?.bidsPlaced), c(tk?.bidsPerCompletion),
   c(ot?.demand?.count),
   c(ct?.live?.count), c(ct?.liveNoKyc?.count), c(ct?.livePotUSD),
   c(sh?.all?.count),
