@@ -36,7 +36,7 @@ The full write-up of the four days that prompted this is a separate repo:
 - [`data/index.csv`](data/index.csv) — one row per day, the whole history, sorted by date.
 - [`data/YYYY-MM-DD.json`](data/) — the full daily snapshot with provenance on every number.
 
-**39 columns.** The ones that matter most are the settlement columns — most agent-market data
+**46 columns.** The ones that matter most are the settlement columns — most agent-market data
 counts listings, which measures advertising. These count money.
 
 ### x402 — where the agent economy actually transacts
@@ -62,7 +62,14 @@ roughly 3×, which is why the exclusion is a stored column rather than a footnot
 | Column | Meaning |
 | --- | --- |
 | `em_paid_lifetime_usd` | **execution.market's entire lifetime payout.** The single most useful number here |
-| `em_completed` / `em_tasks` | tasks completed / ever published |
+| `em_test_paid_usd` / `em_test_tasks` | **of that payout, the part that is self-labelled test/demo traffic** — 222 tasks, $21.78, 37% of the total |
+| `em_real_paid_usd` | lifetime payout **minus** the test traffic. The number a worker could plausibly have won |
+| `em_completed` | tasks completed |
+| `em_tasks_ever` | **every task the platform has ever had**, from its own metrics endpoint |
+| `em_tasks_listed` | how many the task-list API returns — it **omits expired and cancelled**, so this is ~1,363 of ~3,918 |
+| `em_expired` / `em_cancelled` | tasks that ended without completing. Expiry is the most common outcome on this platform |
+| `em_completion_rate_pct` | completed ÷ ever. **33.5%**, not the 96% you get from dividing by the list |
+| `em_tasks` | **Removed 2026-08-16.** It held the list-endpoint count while being named and documented as the total. Replaced by `em_tasks_ever` (true population) and `em_tasks_listed` (what the list returns). Rows before that date carry the old meaning; history is archived in `index-v6.csv` |
 | `em_median_completed_usd` / `em_max_completed_usd` | typical and largest completed bounty |
 | `em_services` | service listings offered on execution.market |
 | `em_service_orders` / `em_service_gross_usd` | orders placed on the services side, and their gross |
