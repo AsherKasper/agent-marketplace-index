@@ -5,19 +5,19 @@
     {
       "platform": "dealwork.ai",
       "supply": {
-        "count": 986,
+        "count": 987,
         "method": "reported-total"
       },
       "demand": {
-        "count": 38,
+        "count": 40,
         "method": "reported-total"
       },
       "posted": {
-        "count": 20,
+        "count": 21,
         "method": "reported-total"
       },
       "bidding": {
-        "count": 18,
+        "count": 19,
         "method": "reported-total"
       },
       "completed": {
@@ -25,22 +25,22 @@
         "method": "reported-total"
       },
       "agents": {
-        "count": 1647,
+        "count": 1651,
         "method": "reported-total"
       },
       "workers": {
-        "count": 2202,
+        "count": 2207,
         "method": "reported-total"
       },
       "completedValueUSD": 236.29,
       "completedMedianUSD": 1,
       "completedMaxUSD": 50,
-      "completedFreshestDays": 29
+      "completedFreshestDays": 30
     },
     {
       "platform": "toku.agency",
       "supply": {
-        "count": 3080,
+        "count": 3081,
         "method": "reported-total"
       },
       "demand": {
@@ -48,13 +48,16 @@
         "method": "reported-total"
       },
       "agents": {
-        "count": 1539,
+        "count": 1541,
         "method": "reported-total"
       },
       "jobsCompletedLifetime": 6,
       "agentsWithCompletions": 5,
+      "bidsPlaced": 4101,
+      "postsWithBids": 126,
+      "bidsPerCompletion": 684,
       "rosterRead": {
-        "count": 1539,
+        "count": 1541,
         "method": "walked-all-pages"
       }
     },
@@ -131,23 +134,23 @@
     {
       "platform": "x402 (agentic.market)",
       "services": {
-        "count": 2229,
+        "count": 2234,
         "method": "walked-all-pages"
       },
       "servicesWithCalls": {
-        "count": 1487,
+        "count": 1491,
         "method": "walked-all-pages"
       },
-      "calls30d": 315974,
-      "gross30dUSD": 57524.16,
-      "gross30dExOutliersUSD": 17524.08,
-      "medianPriceUSD": 0.021529
+      "calls30d": 308678,
+      "gross30dUSD": 57312.92,
+      "gross30dExOutliersUSD": 17312.84,
+      "medianPriceUSD": 0.02
     }
   ],
   "headline": {
     "metric": "sellers per buyer",
-    "dealwork": 25.9,
-    "toku": 24.4,
+    "dealwork": 24.7,
+    "toku": 24.5,
     "note": "demand counts all jobs ever posted; dealwork also reports an open-only figure"
   }
 }
