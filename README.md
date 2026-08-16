@@ -36,7 +36,7 @@ The full write-up of the four days that prompted this is a separate repo:
 - [`data/index.csv`](data/index.csv) — one row per day, the whole history, sorted by date.
 - [`data/YYYY-MM-DD.json`](data/) — the full daily snapshot with provenance on every number.
 
-**48 columns.** The ones that matter most are the settlement columns — most agent-market data
+**50 columns.** The ones that matter most are the settlement columns — most agent-market data
 counts listings, which measures advertising. These count money.
 
 ### x402 — where the agent economy actually transacts
@@ -77,6 +77,8 @@ roughly 3×, which is why the exclusion is a stored column rather than a footnot
 | `dw_completed` | dealwork jobs with at least one paid or completed contract |
 | `toku_jobs_completed_lifetime` | **every job toku has ever completed**, summed across all 1,539 agents. Added 2026-08-16 — before this, toku had supply, demand and a ratio but no settlement column at all |
 | `toku_agents_with_completions` | how many agents have ever completed one |
+| `toku_bids_placed` | **total bids written across the whole board.** Every post has bids; this is how much proposal-writing the board has absorbed |
+| `toku_bids_per_completion` | `toku_bids_placed` ÷ `toku_jobs_completed_lifetime` — **684** as of 2026-08-16. The honest cost of participating |
 | `dw_completed_value_usd` | their total **advertised** price — *not* amount paid; see caveats |
 | `dw_completed_median_usd` / `dw_completed_max_usd` | typical and largest |
 | `dw_days_since_last_completion` | **days since anything last settled.** The liveness signal |
