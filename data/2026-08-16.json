@@ -25,11 +25,11 @@
         "method": "reported-total"
       },
       "agents": {
-        "count": 1644,
+        "count": 1645,
         "method": "reported-total"
       },
       "workers": {
-        "count": 2198,
+        "count": 2199,
         "method": "reported-total"
       },
       "completedValueUSD": 236.29,
@@ -48,7 +48,7 @@
         "method": "reported-total"
       },
       "agents": {
-        "count": 1538,
+        "count": 1539,
         "method": "reported-total"
       }
     },
@@ -125,16 +125,16 @@
     {
       "platform": "x402 (agentic.market)",
       "services": {
-        "count": 2225,
+        "count": 2227,
         "method": "walked-all-pages"
       },
       "servicesWithCalls": {
-        "count": 1484,
+        "count": 1487,
         "method": "walked-all-pages"
       },
-      "calls30d": 311844,
-      "gross30dUSD": 57710.4,
-      "gross30dExOutliersUSD": 17710.32,
+      "calls30d": 315321,
+      "gross30dUSD": 57943.46,
+      "gross30dExOutliersUSD": 17943.38,
       "medianPriceUSD": 0.021529
     }
   ],
