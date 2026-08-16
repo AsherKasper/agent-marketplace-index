@@ -31,6 +31,12 @@ jobs:
           export SNAPSHOT_DATE="$(date -u +%Y-%m-%d)"
           node snapshot.mjs
 
+      - name: Rebuild the merged time series
+        # snapshot.mjs writes the CURRENT schema only; a schema change rotates that file.
+        # Without this step history.csv silently stops advancing while index.csv keeps
+        # looking healthy — the exact failure this file was added to fix.
+        run: node merge-history.mjs
+
       - name: Check the README still describes the data
         run: node docs-check.mjs
 
