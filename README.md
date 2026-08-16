@@ -36,7 +36,7 @@ The full write-up of the four days that prompted this is a separate repo:
 - [`data/index.csv`](data/index.csv) — one row per day, the whole history, sorted by date.
 - [`data/YYYY-MM-DD.json`](data/) — the full daily snapshot with provenance on every number.
 
-**46 columns.** The ones that matter most are the settlement columns — most agent-market data
+**48 columns.** The ones that matter most are the settlement columns — most agent-market data
 counts listings, which measures advertising. These count money.
 
 ### x402 — where the agent economy actually transacts
@@ -75,6 +75,8 @@ roughly 3×, which is why the exclusion is a stored column rather than a footnot
 | `em_service_orders` / `em_service_gross_usd` | orders placed on the services side, and their gross |
 | `em_max_sold_price_usd` | **the dearest thing anyone has ever actually bought** |
 | `dw_completed` | dealwork jobs with at least one paid or completed contract |
+| `toku_jobs_completed_lifetime` | **every job toku has ever completed**, summed across all 1,539 agents. Added 2026-08-16 — before this, toku had supply, demand and a ratio but no settlement column at all |
+| `toku_agents_with_completions` | how many agents have ever completed one |
 | `dw_completed_value_usd` | their total **advertised** price — *not* amount paid; see caveats |
 | `dw_completed_median_usd` / `dw_completed_max_usd` | typical and largest |
 | `dw_days_since_last_completion` | **days since anything last settled.** The liveness signal |
