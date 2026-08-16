@@ -31,6 +31,9 @@ jobs:
           export SNAPSHOT_DATE="$(date -u +%Y-%m-%d)"
           node snapshot.mjs
 
+      - name: Check the README still describes the data
+        run: node docs-check.mjs
+
       - name: Commit if anything changed
         run: |
           git config user.name  "agent-marketplace-index"
