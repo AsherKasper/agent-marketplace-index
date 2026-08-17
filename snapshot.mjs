@@ -327,13 +327,43 @@ async function x402() {
   out.services = counted(svcs.length, "walked-all-pages");
   out.servicesWithCalls = counted(per.filter((r) => r.calls > 0).length, "walked-all-pages");
   out.calls30d = per.reduce((a, r) => a + r.calls, 0);
-  out.gross30dUSD = +per.reduce((a, r) => a + r.calls * r.price, 0).toFixed(2);
-  // A single service priced at ~$5,000/call has repeatedly been ~69% of gross. Report
-  // both, because quoting only the headline would overstate this market ~3x.
-  out.gross30dExOutliersUSD = +per.filter((r) => r.price < 1000)
-    .reduce((a, r) => a + r.calls * r.price, 0).toFixed(2);
-  const priced = per.map((r) => r.price).filter((p) => p > 0).sort((a, b) => a - b);
-  out.medianPriceUSD = priced.length ? priced[Math.floor(priced.length / 2)] : null;
+
+  // GROSS, done at the endpoint. Corrected 2026-08-17; the previous method overstated this
+  // market by 3.38x and shipped that way for the life of this dataset.
+  //
+  // It multiplied each service's AVERAGE price by ALL of that service's calls. Prices vary by
+  // an enormous factor WITHIN one service, and the cheap endpoint is the one that gets called.
+  // x402.d-bis.org is the proof: 8 calls, endpoints priced $0.01 and $10,000, service average
+  // $5,000.01. The old line booked 8 x $5,000.01 = $40,000 from a service that, at the price
+  // its calls were plausibly made at, earned about eight cents. That one row was $40,000 of a
+  // $40,935 error.
+  //
+  // The gross30dExOutliersUSD guard did not catch it either, because it filtered on the
+  // service AVERAGE being under $1,000 — an average is exactly the thing an outlier hides in.
+  //
+  // Each endpoint knows its own price and its own call count. Use them.
+  const eps = svcs.flatMap((s) => s.endpoints ?? []);
+  const epCalls = (e) => Number(e?.quality?.l30DaysTotalCalls ?? 0) || 0;
+  const epPrice = (e) => parseFloat(e?.pricing?.amount ?? "0") || 0;
+  out.gross30dUSD = +eps.reduce((a, e) => a + epCalls(e) * epPrice(e), 0).toFixed(2);
+  out.gross30dExOutliersUSD = +eps.filter((e) => epPrice(e) < 1000)
+    .reduce((a, e) => a + epCalls(e) * epPrice(e), 0).toFixed(2);
+  // Kept so the correction is auditable against every archived row rather than asserted.
+  out.gross30dServiceAvgMethodUSD = +per.reduce((a, r) => a + r.calls * r.price, 0).toFixed(2);
+
+  // Median price of a call that ACTUALLY HAPPENED, weighted by calls — not the median of the
+  // price list, which lets 13,869 never-called endpoints outvote the ones carrying traffic.
+  const called = eps.filter((e) => epCalls(e) > 0).sort((a, b) => epPrice(a) - epPrice(b));
+  const totalCalls = called.reduce((a, e) => a + epCalls(e), 0);
+  let acc = 0, medianCall = null;
+  for (const e of called) { acc += epCalls(e); if (acc >= totalCalls / 2) { medianCall = epPrice(e); break; } }
+  out.medianPriceUSD = medianCall;
+  out.endpointsTotal = eps.length;
+  out.endpointsWithCalls = counted(called.length, "walked-all-pages");
+  // 100% of paid volume here is denominated in one stablecoin. Collected rather than assumed.
+  out.currencies = [...new Set(eps.filter((e) => epCalls(e) > 0).map((e) => e?.pricing?.currency).filter(Boolean))];
+  out.usdcCallSharePct = +(100 * called.filter((e) => e?.pricing?.currency === "USDC")
+    .reduce((a, e) => a + epCalls(e), 0) / (totalCalls || 1)).toFixed(2);
   return out;
 }
 
@@ -375,7 +405,7 @@ const sh = platforms.find((p) => p.platform === "sherlock.xyz");
 const em = platforms.find((p) => p.platform === "execution.market");
 const xf = platforms.find((p) => p.platform === "x402 (agentic.market)");
 const csv = join(DATA, "index.csv");
-const header = "date,dw_listings,dw_jobs,dw_posted,dw_bidding,dw_completed,dw_completed_value_usd,dw_completed_median_usd,dw_completed_max_usd,dw_days_since_last_completion,dw_ratio,dw_genuine_requests,dw_advert_pct,dw_nonenglish_jobs,dw_agents,dw_workers,toku_services,toku_jobs,toku_ratio,toku_agents,toku_jobs_completed_lifetime,toku_agents_with_completions,toku_bids_placed,toku_bids_per_completion,ot_tasks,cantina_live,cantina_live_nokyc,cantina_live_pot_usd,sherlock_contests,em_tasks_ever,em_tasks_listed,em_expired,em_cancelled,em_completion_rate_pct,em_completed,em_paid_lifetime_usd,em_test_tasks,em_test_paid_usd,em_real_paid_usd,em_median_completed_usd,em_max_completed_usd,em_published,em_published_usd,em_services,em_service_orders,em_service_gross_usd,em_max_sold_price_usd,x402_services,x402_services_with_calls,x402_calls_30d,x402_gross_30d_usd,x402_gross_30d_ex_outlier_usd,x402_median_price_usd\n";
+const header = "date,dw_listings,dw_jobs,dw_posted,dw_bidding,dw_completed,dw_completed_value_usd,dw_completed_median_usd,dw_completed_max_usd,dw_days_since_last_completion,dw_ratio,dw_genuine_requests,dw_advert_pct,dw_nonenglish_jobs,dw_agents,dw_workers,toku_services,toku_jobs,toku_ratio,toku_agents,toku_jobs_completed_lifetime,toku_agents_with_completions,toku_bids_placed,toku_bids_per_completion,ot_tasks,cantina_live,cantina_live_nokyc,cantina_live_pot_usd,sherlock_contests,em_tasks_ever,em_tasks_listed,em_expired,em_cancelled,em_completion_rate_pct,em_completed,em_paid_lifetime_usd,em_test_tasks,em_test_paid_usd,em_real_paid_usd,em_median_completed_usd,em_max_completed_usd,em_published,em_published_usd,em_services,em_service_orders,em_service_gross_usd,em_max_sold_price_usd,x402_services,x402_services_with_calls,x402_calls_30d,x402_gross_30d_usd,x402_gross_30d_ex_outlier_usd,x402_median_price_usd,x402_gross_30d_service_avg_usd,x402_endpoints,x402_endpoints_with_calls,x402_usdc_call_share_pct\n";
 if (!existsSync(csv)) writeFileSync(csv, header);
 const c = (v) => (v == null ? "" : v);
 const row = [
@@ -401,7 +431,23 @@ const row = [
   // x402 — real paid calls. This is where the agent economy actually transacts.
   c(xf?.services?.count), c(xf?.servicesWithCalls?.count), c(xf?.calls30d),
   c(xf?.gross30dUSD), c(xf?.gross30dExOutliersUSD), c(xf?.medianPriceUSD),
+  c(xf?.gross30dServiceAvgMethodUSD), c(xf?.endpointsTotal), c(xf?.endpointsWithCalls?.count), c(xf?.usdcCallSharePct),
 ].join(",") + "\n";
+
+// Header and row must agree on width. Added 2026-08-17 after a patch landed four new x402
+// values in the row builder and silently failed to land them in the header — which would have
+// written 57 values under a 53-column header, shifting every column after x402 in a file whose
+// entire value is that the columns mean what they say. A CSV cannot notice this, the schema
+// guard below cannot (the header on disk would still match the header in code), and no
+// consumer would either: they would just read a gross figure out of the median column.
+{
+  const hCols = header.trim().split(",").length;
+  const rCols = row.trim().split(",").length;
+  if (hCols !== rCols) {
+    console.error(`FATAL: header has ${hCols} columns, row has ${rCols} values — refusing to write.`);
+    process.exit(1);
+  }
+}
 
 // A schema change must not silently corrupt the history: if the header on disk is an
 // older shape, keep the old file and start a new one rather than appending mismatched rows.
