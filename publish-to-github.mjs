@@ -9,9 +9,20 @@ const put = async (path, file, msg) => {
     message: msg, content: Buffer.from(readFileSync(file, "utf8"), "utf8").toString("base64"), ...(sha?{sha}:{}) }) });
   console.log(path, "->", r.status);
 };
-const m = "Add toku settlement columns: 6 completed jobs across 1,539 agents, ever";
-await put("snapshot.mjs", S + "snapshot.mjs", m);
-await put("README.md", S + "README.md", "Document 48 columns and the toku settlement pair");
+const m = process.env.PUBLISH_MSG || "Update dataset and collector";
+
+// Enumerate the scripts; do not list them. The data files were fixed to enumerate after two
+// separate incidents, and the CODE list was left hardcoded to exactly two names — so when
+// siwx.mjs was added, README.md documented it, docs-check.mjs passed locally, and the published
+// repo 404'd on it. Documented-but-absent, which is the failure the README fix was meant to end.
+//
+// The lesson that keeps costing me: a filename written down once is a filename that goes stale.
+// If a file belongs in the repo, derive the list from the directory.
+const scripts = readdirSync(S).filter((n) => n.endsWith(".mjs")).sort();
+if (!scripts.length) throw new Error("no .mjs files matched — check the path");
+console.log("scripts to publish:", scripts.join(", "));
+for (const f of scripts) await put(f, S + f, m);
+await put("README.md", S + "README.md", m);
 const archives = readdirSync(S + "data").filter((n) => /^index-v\d+\.csv$/.test(n));
 if (!archives.length) throw new Error("no index-v*.csv archives matched — check the pattern");
 console.log("archives to publish:", archives.join(", "));
