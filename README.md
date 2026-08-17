@@ -68,7 +68,7 @@ Two companion repos:
 > populated only for the dates it existed, and `em_tasks_ever` populated only after. They are
 > different measurements and are deliberately not merged into one column.
 
-**53 columns.** The ones that matter most are the settlement columns — most agent-market data
+**57 columns.** The ones that matter most are the settlement columns — most agent-market data
 counts listings, which measures advertising. These count money.
 
 ### x402 — where the agent economy actually transacts
@@ -81,13 +81,34 @@ is a place agents sell **labour**, and all of them are dead or nearly so. x402 i
 | --- | --- |
 | `x402_calls_30d` | **real paid calls in the last 30 days.** Not listings, not offers — purchases |
 | `x402_services` / `x402_services_with_calls` | services indexed, and how many have any paid call |
-| `x402_gross_30d_usd` | implied 30-day gross, **including a ~$5,000/call outlier** |
-| `x402_gross_30d_ex_outlier_usd` | the same figure with services priced ≥$1,000 removed |
-| `x402_median_price_usd` | median price of an indexed service |
+| `x402_gross_30d_usd` | 30-day gross, computed **per endpoint**: each endpoint's own price × its own calls |
+| `x402_gross_30d_ex_outlier_usd` | the same with endpoints priced ≥$1,000 removed |
+| `x402_median_price_usd` | median price of a call that **actually happened**, weighted by calls |
+| `x402_gross_30d_service_avg_usd` | the superseded method, kept so the correction below is auditable |
+| `x402_endpoints` / `x402_endpoints_with_calls` | endpoints indexed, and how many saw a paid call |
+| `x402_usdc_call_share_pct` | share of paid calls denominated in USDC. It is 100.00 |
 
-**Read the two gross columns together or neither.** One unnamed service priced near $5,000/call has
-consistently been ~69% of the headline. Quoting `x402_gross_30d_usd` alone overstates this market by
-roughly 3×, which is why the exclusion is a stored column rather than a footnote someone can miss.
+### Correction, 2026-08-17: this dataset overstated x402 gross by ~3.4×
+
+Until today `x402_gross_30d_usd` multiplied each service's **average** price by **all** of that
+service's calls. Prices vary enormously *within* one service, and the cheap endpoint is the one
+that gets called, so the average is applied to traffic that never paid it.
+
+One row proves it. `x402.d-bis.org` has 8 calls and two endpoints, priced **$0.01 and $10,000**.
+Its service average is $5,000.01, so the old line booked `8 × $5,000.01 = $40,000` — from a
+service that, at the price its calls were plausibly made at, earned about eight cents. That
+single row was $40,000 of a $40,935 error.
+
+The `x402_gross_30d_ex_outlier_usd` guard did not catch it, because it filtered on the service **average** being
+under $1,000 — and an average is precisely where an outlier hides. It now filters per endpoint.
+
+On the day of the correction the two methods read **$16,425** and **$57,428** for the same
+market. Both are stored per row from now on.
+
+**Rows dated before 2026-08-17 carry the old figure in `x402_gross_30d_usd` and cannot be
+recomputed** — the upstream API exposes a rolling 30-day window, not history. Treat that column
+before 2026-08-17 as roughly 3.4× too high, and `x402_calls_30d` — which was never affected —
+as the reliable series across the whole file.
 
 ### What actually got paid
 
@@ -218,6 +239,7 @@ the two that decide whether a bad row ever reaches you — were undocumented.
 | `publish-to-github.mjs` | pushes data and code to this repo | the version before it **hardcoded a filename** and silently skipped `history.csv` |
 | `refresh-tenjin.mjs` | republishes the paid copy of this dataset | refuses to publish a "daily series" with fewer than two rows, or a body with an unsubstituted `{{TOKEN}}` |
 | `qa-published.mjs` | checks every published piece is still purchasable | 402 status, valid payment header, correct price, non-empty preview |
+| `siwx.mjs` | signed-request helper for the paid copy, used by the two scripts above | it was imported but never committed, so `qa-published.mjs` crashed on line 1 for anyone who cloned it |
 | `x402-server.mjs` | serves this dataset as a paid x402 endpoint | **loopback only**; settlement is written but unproven, so the paid path refuses and says so |
 
 The collector and the three checkers run in that order on every scheduled build:
