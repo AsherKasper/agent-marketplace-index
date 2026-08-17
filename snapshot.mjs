@@ -94,7 +94,52 @@ async function dealwork() {
       Math.floor((Date.now() - new Date(t.updatedAt ?? t.createdAt)) / 86400000)));
   }
 
+  // Added 2026-08-17, because this series would otherwise have LIED BY OMISSION.
+  // Between 08-11 and 08-17 `dw_ratio` improved 27.2 → 22.8 — the metric everyone quotes,
+  // moving 16% in the encouraging direction. Over the same week the share of posts that are
+  // service adverts rose 83% → 93%, so genuine buyer requests fell from 6 to 3 while the job
+  // count rose by eight. Tracking the ratio without this column shows a market filling in
+  // during a week its demand halved.
+  //
+  // Tells are English-only, so `dw_genuine_requests` is a CEILING: a non-English advert scores
+  // as demand. `dw_nonenglish_jobs` records how much of the board this check cannot read.
+  // MUST STAY IDENTICAL to SELLER_TELLS/BUYER_TELLS in reality-check.mjs. The first version of
+  // this was a trimmed copy — 17 patterns against that file's 25 — and the two tools reported
+  // 88.6% and 93% adverts for the same board on the same day. Two published numbers for one
+  // quantity is worse than either number being wrong, because it makes both unusable.
+  const SELLER = [
+    /\bfor your\b/i, /\byour (existing|current) \w+/i,
+    /\bi (will|can|offer|provide|deliver|build|write|generate|create)\b/i,
+    /\b(we|our) (offer|provide|deliver|build|services)\b/i,
+    /\bmy services?\b/i, /\bhire me\b/i,
+    /\bcustom [\w-]+( [\w-]+){0,2} (development|services|integration|solutions|bot)\b/i,
+    /\b(platform|production|enterprise)-ready\b/i,
+    /\bservices include\b/i, /\b\d+ ?h(ours?)? delivery\b/i, /\bturnaround\b/i,
+    /\bdelivered in \d/i, /\beach deliverable\b/i, /\bships with\b/i,
+    /\bexperience:/i, /\bportfolio\b/i, /\bavailable 24\/7\b/i,
+    /\bwhat i do\b/i, /\boffering:/i, /\b(agent|bot|service) for\b/i,
+    /\b\w+ service:/i, /\bmy (rates?|pricing)\b/i, /\bfixed-scope\b/i,
+    /\b(i|we) (accept|support|handle)\b/i, /\bper (word|page|script|report)\b/i,
+  ];
+  const BUYER = [
+    /\b(i|we) need\b/i, /\bneed(ed)? (a|an|to|someone)\b/i, /\blooking for\b/i,
+    /\bplease (write|build|create|make|produce)\b/i, /\bshould (handle|include|be|support)\b/i,
+    /\bmust (handle|include|be|support|analyse|analyze)\b/i,
+    /\brequirements?\b/i, /\bdeliverable is\b/i, /\bwe want\b/i, /\bcreate a\b/i,
+  ];
+  let genuine = null, advertPct = null, nonEnglish = null;
+  const jobPage = await getJSON("https://dealwork.ai/api/v1/jobs?per_page=100");
+  const jrows = jobPage.json?.data ?? [];
+  if (jrows.length) {
+    const score = (s) => SELLER.filter((r) => r.test(s)).length - BUYER.filter((r) => r.test(s)).length;
+    genuine = jrows.filter((j) => score(String(j.description ?? "")) <= 0).length;
+    advertPct = +(((jrows.length - genuine) / jrows.length) * 100).toFixed(1);
+    nonEnglish = jrows.filter((j) =>
+      (String(j.description ?? "").match(/[\u3000-\u9fff\u0400-\u04ff\u0600-\u06ff]/g) || []).length > 8).length;
+  }
+
   return { platform: "dealwork.ai", supply: listings, demand: jobs, posted, bidding, completed,
+    genuineRequests: genuine, advertPct, nonEnglishJobs: nonEnglish,
     agents, workers, completedValueUSD, completedMedianUSD, completedMaxUSD, completedFreshestDays: completedFreshest };
 }
 
@@ -330,7 +375,7 @@ const sh = platforms.find((p) => p.platform === "sherlock.xyz");
 const em = platforms.find((p) => p.platform === "execution.market");
 const xf = platforms.find((p) => p.platform === "x402 (agentic.market)");
 const csv = join(DATA, "index.csv");
-const header = "date,dw_listings,dw_jobs,dw_posted,dw_bidding,dw_completed,dw_completed_value_usd,dw_completed_median_usd,dw_completed_max_usd,dw_days_since_last_completion,dw_ratio,dw_agents,dw_workers,toku_services,toku_jobs,toku_ratio,toku_agents,toku_jobs_completed_lifetime,toku_agents_with_completions,toku_bids_placed,toku_bids_per_completion,ot_tasks,cantina_live,cantina_live_nokyc,cantina_live_pot_usd,sherlock_contests,em_tasks_ever,em_tasks_listed,em_expired,em_cancelled,em_completion_rate_pct,em_completed,em_paid_lifetime_usd,em_test_tasks,em_test_paid_usd,em_real_paid_usd,em_median_completed_usd,em_max_completed_usd,em_published,em_published_usd,em_services,em_service_orders,em_service_gross_usd,em_max_sold_price_usd,x402_services,x402_services_with_calls,x402_calls_30d,x402_gross_30d_usd,x402_gross_30d_ex_outlier_usd,x402_median_price_usd\n";
+const header = "date,dw_listings,dw_jobs,dw_posted,dw_bidding,dw_completed,dw_completed_value_usd,dw_completed_median_usd,dw_completed_max_usd,dw_days_since_last_completion,dw_ratio,dw_genuine_requests,dw_advert_pct,dw_nonenglish_jobs,dw_agents,dw_workers,toku_services,toku_jobs,toku_ratio,toku_agents,toku_jobs_completed_lifetime,toku_agents_with_completions,toku_bids_placed,toku_bids_per_completion,ot_tasks,cantina_live,cantina_live_nokyc,cantina_live_pot_usd,sherlock_contests,em_tasks_ever,em_tasks_listed,em_expired,em_cancelled,em_completion_rate_pct,em_completed,em_paid_lifetime_usd,em_test_tasks,em_test_paid_usd,em_real_paid_usd,em_median_completed_usd,em_max_completed_usd,em_published,em_published_usd,em_services,em_service_orders,em_service_gross_usd,em_max_sold_price_usd,x402_services,x402_services_with_calls,x402_calls_30d,x402_gross_30d_usd,x402_gross_30d_ex_outlier_usd,x402_median_price_usd\n";
 if (!existsSync(csv)) writeFileSync(csv, header);
 const c = (v) => (v == null ? "" : v);
 const row = [
@@ -338,6 +383,7 @@ const row = [
   c(dw?.supply?.count), c(dw?.demand?.count), c(dw?.posted?.count), c(dw?.bidding?.count),
   c(dw?.completed?.count), c(dw?.completedValueUSD), c(dw?.completedMedianUSD),
   c(dw?.completedMaxUSD), c(dw?.completedFreshestDays), c(snap.headline.dealwork),
+  c(dw?.genuineRequests), c(dw?.advertPct), c(dw?.nonEnglishJobs),
   c(dw?.agents?.count), c(dw?.workers?.count),
   c(tk?.supply?.count), c(tk?.demand?.count), c(snap.headline.toku), c(tk?.agents?.count),
   c(tk?.jobsCompletedLifetime), c(tk?.agentsWithCompletions),
