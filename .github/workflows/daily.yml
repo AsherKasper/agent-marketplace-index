@@ -37,6 +37,12 @@ jobs:
         # looking healthy — the exact failure this file was added to fix.
         run: node merge-history.mjs
 
+      - name: Sanity-check the series against itself
+        # Lifetime cumulative columns cannot fall. If one does, the collector read something
+        # different from what it read yesterday and the row is wrong — fail before committing
+        # it, because a wrong row in a paid dataset is worse than a missing one.
+        run: node sanity-check.mjs
+
       - name: Check the README still describes the data
         run: node docs-check.mjs
 
