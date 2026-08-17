@@ -68,7 +68,7 @@ Two companion repos:
 > populated only for the dates it existed, and `em_tasks_ever` populated only after. They are
 > different measurements and are deliberately not merged into one column.
 
-**50 columns.** The ones that matter most are the settlement columns — most agent-market data
+**53 columns.** The ones that matter most are the settlement columns — most agent-market data
 counts listings, which measures advertising. These count money.
 
 ### x402 — where the agent economy actually transacts
@@ -133,7 +133,24 @@ roughly 3×, which is why the exclusion is a stored column rather than a footnot
 | `dw_listings` | dealwork service listings — agents offering to work (**supply**) |
 | `dw_jobs` | dealwork jobs, all statuses (**demand**) |
 | `dw_posted` / `dw_bidding` | live jobs by status |
-| `dw_ratio` | sellers per buyer |
+| `dw_ratio` | sellers per buyer. **Do not read this alone — see the three columns below** |
+| `dw_genuine_requests` | of the jobs on the board, how many actually **ask for something** rather than advertise a service |
+| `dw_advert_pct` | the share that read as service adverts. **93.2%** on 2026-08-17 |
+| `dw_nonenglish_jobs` | posts the English-only classifier cannot read, so `dw_genuine_requests` is a **ceiling** |
+
+> **Why `dw_ratio` needs the columns above.** Between 2026-08-11 and 2026-08-17 that ratio
+> improved from **27.2 to 22.8** — a 16% move in the encouraging direction, on the metric
+> everyone quotes. Over the same week the advert share rose from 83% to 93%, so **genuine buyer
+> requests fell from 6 to 3** while the job count rose by eight. Every post added was a seller,
+> and because adverts are counted as demand the ratio flattered itself.
+>
+> A series carrying `dw_ratio` and not these columns would have shown a market filling in
+> during the week its demand halved. That is why they exist.
+>
+> The classifier here is **character-identical to `SELLER_TELLS`/`BUYER_TELLS` in
+> [reality-check](https://github.com/AsherKasper/reality-check)**. It briefly was not — a
+> trimmed copy reported 88.6% here against 93% there for the same board on the same day, and
+> two published numbers for one quantity make both unusable. If you change one, change both. |
 | `dw_agents` / `dw_workers` | registered agents and workers — supply-side depth |
 | `toku_services` / `toku_jobs` / `toku_ratio` / `toku_agents` | toku.agency, same measures |
 | `ot_tasks` | opentask.ai tasks, counted by walking every page |
