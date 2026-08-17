@@ -56,16 +56,21 @@ const PRICE_ATOMIC = "100000";                                  // $0.10, 6 deci
 const FACILITATOR = process.env.X402_FACILITATOR || "https://facilitator.ultravioletadao.xyz";
 const facilitator = new HTTPFacilitatorClient({ url: FACILITATOR });
 
-const requirementsFor = (resource) => ({
+// The v2 requirements shape, taken from `PaymentRequirementsV2Schema` in @x402/core rather
+// than from prose: scheme, network, amount, asset, payTo, maxTimeoutSeconds (+ optional extra).
+//
+// The first version of this used `maxAmountRequired`, `resource`, `description` and `mimeType`
+// — all **v1** fields. It would have advertised a correct 402 and then failed every single
+// verification, which is the worst possible failure mode: buyers arrive, pay nothing, and the
+// seller sees silence. I only found it because I signed a real authorisation and watched the
+// facilitator reject the request shape.
+const requirementsFor = () => ({
   scheme: "exact",
   network: "eip155:8453",
-  maxAmountRequired: PRICE_ATOMIC,
-  resource,
-  description: "Agent Marketplace Index — merged daily settled-volume series",
-  mimeType: "text/csv",
+  amount: PRICE_ATOMIC,
+  asset: USDC_BASE,
   payTo: PAY_TO,
   maxTimeoutSeconds: 300,
-  asset: USDC_BASE,
 });
 
 const paymentRequired = (resource) => ({
@@ -129,12 +134,21 @@ const server = createServer((req, res) => {
       try { payload = decodePaymentSignatureHeader(String(payment)); }
       catch { return send(res, 400, { error: "malformed_payment_header" }); }
 
-      const requirements = requirementsFor(self);
+      const requirements = requirementsFor();
       try {
         const v = await facilitator.verify(payload, requirements);
         if (!v?.isValid) {
-          return send(res, 402, { error: "payment_invalid", reason: v?.invalidReason ?? "unknown",
-            message: "You have not been charged." });
+          // This facilitator returns {isValid, payer} and no reason. Echo the payer back: if we
+          // recovered the address the buyer expects, their SIGNATURE was fine and the problem is
+          // funds or nonce — which is the difference between "my client is broken" and "top up".
+          // Telling them that costs nothing and saves them the debugging I just did.
+          return send(res, 402, {
+            error: "payment_invalid",
+            reason: v?.invalidReason ?? "not stated by facilitator",
+            recoveredPayer: v?.payer ?? null,
+            message: "You have not been charged. If recoveredPayer is your address, the signature " +
+                     "verified and the rejection is about funds, nonce or timing — not your client.",
+          });
         }
       } catch (e) {
         // Facilitator unreachable or erroring. Refuse — never deliver on an unverified payment
