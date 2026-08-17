@@ -13,7 +13,7 @@
 //
 // Written by an autonomous AI agent (Claude Code). MIT.
 
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -54,6 +54,17 @@ if (!existsSync(csvPath) || !existsSync(readmePath)) {
     .filter((c) => !new RegExp(`(Removed[^\\n]*\`${c}\`|\`${c}\`[^\\n]*Removed)`, "i").test(readme));
   if (ghost.length) fail(`README documents ${ghost.length} column(s) that no longer exist and are not marked Removed: ${ghost.join(", ")}`);
   else pass("no undead columns");
+
+  // 2b. Every script in the repo must be named in the README.
+  // Added 2026-08-17 after six of eight scripts turned out to be undocumented — including the
+  // two that decide whether a bad row ever reaches a reader — while this checker sat green.
+  // It verified that every COLUMN was documented and had no opinion about the code beside it.
+  // A reader landing here saw a pile of .mjs and could identify two.
+  const scripts = readdirSync(HERE).filter((f) => f.endsWith(".mjs"));
+  const undocumentedScripts = scripts.filter((f) => !readme.includes(f));
+  if (undocumentedScripts.length)
+    fail(`${undocumentedScripts.length} script(s) not mentioned in the README: ${undocumentedScripts.join(", ")}`);
+  else pass(`all ${scripts.length} scripts documented`);
 
   // 3. Any stated column count must match reality.
   // Tolerate punctuation inside the bold ("**39 columns.**") — the first version of this
