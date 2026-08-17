@@ -5,7 +5,7 @@
     {
       "platform": "dealwork.ai",
       "supply": {
-        "count": 996,
+        "count": 1000,
         "method": "reported-total"
       },
       "demand": {
@@ -25,11 +25,11 @@
         "method": "reported-total"
       },
       "agents": {
-        "count": 1673,
+        "count": 1676,
         "method": "reported-total"
       },
       "workers": {
-        "count": 2236,
+        "count": 2239,
         "method": "reported-total"
       },
       "completedValueUSD": 236.29,
@@ -141,15 +141,15 @@
         "count": 1487,
         "method": "walked-all-pages"
       },
-      "calls30d": 318811,
-      "gross30dUSD": 52886.84,
-      "gross30dExOutliersUSD": 17886.77,
-      "medianPriceUSD": 0.023333
+      "calls30d": 320454,
+      "gross30dUSD": 52950.1,
+      "gross30dExOutliersUSD": 17950.03,
+      "medianPriceUSD": 0.022098
     }
   ],
   "headline": {
     "metric": "sellers per buyer",
-    "dealwork": 22.6,
+    "dealwork": 22.7,
     "toku": 24.5,
     "note": "demand counts all jobs ever posted; dealwork also reports an open-only figure"
   }
