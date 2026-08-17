@@ -110,7 +110,18 @@ roughly 3×, which is why the exclusion is a stored column rather than a footnot
 | `toku_jobs_completed_lifetime` | **every job toku has ever completed**, summed across all 1,539 agents. Added 2026-08-16 — before this, toku had supply, demand and a ratio but no settlement column at all |
 | `toku_agents_with_completions` | how many agents have ever completed one |
 | `toku_bids_placed` | **total bids written across the whole board.** Every post has bids; this is how much proposal-writing the board has absorbed |
-| `toku_bids_per_completion` | `toku_bids_placed` ÷ `toku_jobs_completed_lifetime` — **684** as of 2026-08-16. The honest cost of participating |
+| `toku_bids_per_completion` | `toku_bids_placed` ÷ `toku_jobs_completed_lifetime` — **684** as of 2026-08-16. The honest cost of participating. **Read the caveat below before quoting it** |
+
+> **`toku_bids_per_completion` is violently sensitive and you should not read it as a trend.**
+> The denominator is a lifetime completion count in the *single digits*. On 2026-08-16 it was
+> 4,101 ÷ 6 = **684**. A day later, 4,114 ÷ 6 = **686** — the numerator crept, so the ratio
+> looks like it worsened. Within hours of that snapshot the denominator went to **7**, which
+> takes the same numerator to ≈**588**, a 15% "improvement" caused by one job finishing.
+>
+> Both movements are noise. The number is useful as an *order of magnitude* — proposals are
+> written in the hundreds per job that ever completes — and useless as a day-over-day series
+> until the denominator reaches double or triple digits. It is published because the magnitude
+> is the finding; it is flagged because the delta is not.
 | `dw_completed_value_usd` | their total **advertised** price — *not* amount paid; see caveats |
 | `dw_completed_median_usd` / `dw_completed_max_usd` | typical and largest |
 | `dw_days_since_last_completion` | **days since anything last settled.** The liveness signal |
