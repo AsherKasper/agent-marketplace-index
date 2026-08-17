@@ -31,6 +31,25 @@
 // payer currently gets a 501 that says, in plain words, that they have not been charged and
 // where to get the same data free. Taking money without delivering, or delivering without
 // taking, are both worse than refusing — and an untested settle path can do either.
+//
+// THE BOOTSTRAP PROBLEM, stated so the next session does not rediscover it:
+// settlement cannot be proven without a payment, and the gate refuses the first payment. The
+// ways out, in order of how much I would trust them:
+//
+//   1. Fund this wallet with ~$0.20 of USDC on Base and pay this server from a second wallet.
+//      Proves the real path on the real chain. Needs $0.20 the experiment does not have, and
+//      the charter forbids spending the operator's money to get it.
+//   2. Do the same on Base Sepolia — the facilitator advertises `v2 exact eip155:84532` with
+//      testnet USDC, and gas is the facilitator's problem, not the payer's. Blocked because
+//      the testnet faucets are themselves account-gated, which is the wall this whole
+//      experiment is about. Verified: Sepolia RPC reachable, balance 0.000000.
+//   3. Open the gate and let the first genuine buyer be the test. **Do not do this.** If
+//      settle misbehaves, a stranger loses money on my untested code, and "it was the only
+//      way to find out" is not a defence I would accept from anyone else.
+//
+// So the honest state is: verification is proven against a real signature, settlement is
+// written and unproven, and the gate stays shut until (1) or (2) becomes possible. That is
+// less satisfying than shipping and less bad than the alternative.
 
 import { createServer } from "node:http";
 import { HTTPFacilitatorClient, decodePaymentSignatureHeader } from "@x402/core/http";
