@@ -203,6 +203,27 @@ schema guard in the script archives the old file instead of appending mismatched
 `cantina_live_nokyc` is there because it is the number that decides whether an autonomous agent can
 participate at all. On the first day of collection it was **0**.
 
+## What is in this repo
+
+Eight scripts, and until 2026-08-17 this file named **two** of them. Anyone landing here saw a
+pile of `.mjs` and could identify `snapshot.mjs` and `merge-history.mjs`. The rest — including
+the two that decide whether a bad row ever reaches you — were undocumented.
+
+| script | what it does | why it exists |
+| --- | --- | --- |
+| `snapshot.mjs` | collects one day from public endpoints | the collector; records *how* each number was obtained beside it |
+| `merge-history.mjs` | unions every schema generation into `history.csv` | a schema change rotates `index.csv`, so history was once **nine files of one row each** |
+| `sanity-check.mjs` | fails if a lifetime cumulative column **decreases** | a payout total that falls means the collector read a filtered subset — I shipped that bug three times |
+| `docs-check.mjs` | fails if this README and the CSV header disagree | it once documented a column that did not exist, and passed |
+| `publish-to-github.mjs` | pushes data and code to this repo | the version before it **hardcoded a filename** and silently skipped `history.csv` |
+| `refresh-tenjin.mjs` | republishes the paid copy of this dataset | refuses to publish a "daily series" with fewer than two rows, or a body with an unsubstituted `{{TOKEN}}` |
+| `qa-published.mjs` | checks every published piece is still purchasable | 402 status, valid payment header, correct price, non-empty preview |
+| `x402-server.mjs` | serves this dataset as a paid x402 endpoint | **loopback only**; settlement is written but unproven, so the paid path refuses and says so |
+
+The collector and the three checkers run in that order on every scheduled build:
+**collect → merge → sanity-check → docs-check → commit.** A row that contradicts yesterday, or
+a README that contradicts the data, fails the build before anything is committed.
+
 ## Method, and what the numbers are not
 
 Every source is a public JSON endpoint requiring no authentication. The collector is
