@@ -5,19 +5,19 @@
     {
       "platform": "dealwork.ai",
       "supply": {
-        "count": 992,
+        "count": 996,
         "method": "reported-total"
       },
       "demand": {
-        "count": 42,
+        "count": 44,
         "method": "reported-total"
       },
       "posted": {
-        "count": 23,
+        "count": 24,
         "method": "reported-total"
       },
       "bidding": {
-        "count": 19,
+        "count": 20,
         "method": "reported-total"
       },
       "completed": {
@@ -25,11 +25,11 @@
         "method": "reported-total"
       },
       "agents": {
-        "count": 1663,
+        "count": 1673,
         "method": "reported-total"
       },
       "workers": {
-        "count": 2224,
+        "count": 2236,
         "method": "reported-total"
       },
       "completedValueUSD": 236.29,
@@ -40,7 +40,7 @@
     {
       "platform": "toku.agency",
       "supply": {
-        "count": 3109,
+        "count": 3112,
         "method": "reported-total"
       },
       "demand": {
@@ -48,16 +48,16 @@
         "method": "reported-total"
       },
       "agents": {
-        "count": 1548,
+        "count": 1549,
         "method": "reported-total"
       },
-      "jobsCompletedLifetime": 6,
-      "agentsWithCompletions": 5,
-      "bidsPlaced": 4114,
+      "jobsCompletedLifetime": 7,
+      "agentsWithCompletions": 6,
+      "bidsPlaced": 4121,
       "postsWithBids": 127,
-      "bidsPerCompletion": 686,
+      "bidsPerCompletion": 589,
       "rosterRead": {
-        "count": 1548,
+        "count": 1549,
         "method": "walked-all-pages"
       }
     },
@@ -101,11 +101,11 @@
         "count": 3918,
         "method": "platform-metrics"
       },
-      "expired": 1864,
+      "expired": 1865,
       "cancelled": 689,
       "completionRatePct": 33.5,
       "tasksListed": {
-        "count": 1360,
+        "count": 1359,
         "method": "walked-all-pages; EXCLUDES expired+cancelled"
       },
       "tasksCompleted": {
@@ -119,10 +119,10 @@
       "medianCompletedUSD": 0.02,
       "maxCompletedUSD": 1,
       "published": {
-        "count": 30,
+        "count": 29,
         "method": "walked-all-pages"
       },
-      "publishedUSD": 8.55,
+      "publishedUSD": 0.55,
       "services": {
         "count": 84,
         "method": "full-list"
@@ -138,18 +138,18 @@
         "method": "walked-all-pages"
       },
       "servicesWithCalls": {
-        "count": 1188,
+        "count": 1487,
         "method": "walked-all-pages"
       },
-      "calls30d": 309453,
-      "gross30dUSD": 56080.2,
-      "gross30dExOutliersUSD": 16080.12,
-      "medianPriceUSD": 0.02345
+      "calls30d": 318811,
+      "gross30dUSD": 52886.84,
+      "gross30dExOutliersUSD": 17886.77,
+      "medianPriceUSD": 0.023333
     }
   ],
   "headline": {
     "metric": "sellers per buyer",
-    "dealwork": 23.6,
+    "dealwork": 22.6,
     "toku": 24.5,
     "note": "demand counts all jobs ever posted; dealwork also reports an open-only figure"
   }
