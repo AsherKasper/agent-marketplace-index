@@ -28,11 +28,11 @@
       "advertPct": 93.2,
       "nonEnglishJobs": 1,
       "agents": {
-        "count": 1681,
+        "count": 1686,
         "method": "reported-total"
       },
       "workers": {
-        "count": 2246,
+        "count": 2252,
         "method": "reported-total"
       },
       "completedValueUSD": 236.29,
@@ -43,7 +43,7 @@
     {
       "platform": "toku.agency",
       "supply": {
-        "count": 3112,
+        "count": 3121,
         "method": "reported-total"
       },
       "demand": {
@@ -51,16 +51,16 @@
         "method": "reported-total"
       },
       "agents": {
-        "count": 1550,
+        "count": 1554,
         "method": "reported-total"
       },
       "jobsCompletedLifetime": 7,
       "agentsWithCompletions": 6,
-      "bidsPlaced": 4134,
+      "bidsPlaced": 4164,
       "postsWithBids": 127,
-      "bidsPerCompletion": 591,
+      "bidsPerCompletion": 595,
       "rosterRead": {
-        "count": 1550,
+        "count": 1554,
         "method": "walked-all-pages"
       }
     },
@@ -104,11 +104,11 @@
         "count": 3918,
         "method": "platform-metrics"
       },
-      "expired": 1865,
+      "expired": 1874,
       "cancelled": 689,
       "completionRatePct": 33.5,
       "tasksListed": {
-        "count": 1359,
+        "count": 1350,
         "method": "walked-all-pages; EXCLUDES expired+cancelled"
       },
       "tasksCompleted": {
@@ -122,10 +122,10 @@
       "medianCompletedUSD": 0.02,
       "maxCompletedUSD": 1,
       "published": {
-        "count": 29,
+        "count": 22,
         "method": "walked-all-pages"
       },
-      "publishedUSD": 0.55,
+      "publishedUSD": 0.41,
       "services": {
         "count": 85,
         "method": "full-list"
@@ -137,23 +137,33 @@
     {
       "platform": "x402 (agentic.market)",
       "services": {
-        "count": 2243,
+        "count": 2248,
         "method": "walked-all-pages"
       },
       "servicesWithCalls": {
-        "count": 1485,
+        "count": 1479,
         "method": "walked-all-pages"
       },
-      "calls30d": 320180,
-      "gross30dUSD": 52811.78,
-      "gross30dExOutliersUSD": 17811.71,
-      "medianPriceUSD": 0.021667
+      "calls30d": 308028,
+      "gross30dUSD": 16425.08,
+      "gross30dExOutliersUSD": 9425.08,
+      "gross30dServiceAvgMethodUSD": 57428.03,
+      "medianPriceUSD": 0.008,
+      "endpointsTotal": 29461,
+      "endpointsWithCalls": {
+        "count": 15702,
+        "method": "walked-all-pages"
+      },
+      "currencies": [
+        "USDC"
+      ],
+      "usdcCallSharePct": 100
     }
   ],
   "headline": {
     "metric": "sellers per buyer",
     "dealwork": 22.8,
-    "toku": 24.5,
+    "toku": 24.6,
     "note": "demand counts all jobs ever posted; dealwork also reports an open-only figure"
   }
 }
