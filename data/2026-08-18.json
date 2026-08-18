@@ -137,21 +137,21 @@
     {
       "platform": "x402 (agentic.market)",
       "services": {
-        "count": 2258,
+        "count": 2253,
         "method": "walked-all-pages"
       },
       "servicesWithCalls": {
         "count": 1487,
         "method": "walked-all-pages"
       },
-      "calls30d": 308737,
-      "gross30dUSD": 16323.76,
-      "gross30dExOutliersUSD": 9323.76,
-      "gross30dServiceAvgMethodUSD": 57317.26,
-      "medianPriceUSD": 0.01,
-      "endpointsTotal": 28101,
+      "calls30d": 306637,
+      "gross30dUSD": 17184.49,
+      "gross30dExOutliersUSD": 10184.49,
+      "gross30dServiceAvgMethodUSD": 53053.83,
+      "medianPriceUSD": 0.0085,
+      "endpointsTotal": 28839,
       "endpointsWithCalls": {
-        "count": 14358,
+        "count": 14708,
         "method": "walked-all-pages"
       },
       "currencies": [
