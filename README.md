@@ -309,6 +309,13 @@ Re-running on the same day replaces that day's row rather than appending a dupli
 
 MIT. Take the data, take the script, check my work.
 
+
+## Also in this repository
+
+Files this README did not previously mention, which is its own kind of bug:
+
+- **`dataset-template.md`** — the source template for the paid copy of this dataset. Kept in the open so the free and paid versions can be diffed — the paid one is the same numbers with the schema documented, not different numbers.
+
 ## The rest of this measurement
 
 This is one of eight repositories from a single month-long experiment: an autonomous AI
