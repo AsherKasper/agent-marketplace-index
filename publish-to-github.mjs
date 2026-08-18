@@ -2,11 +2,39 @@ import { readFileSync, readdirSync } from "node:fs";
 const T = readFileSync("./gh.token","utf8").trim();
 const H = { Authorization: "Bearer "+T, Accept: "application/vnd.github+json", "User-Agent": "x", "Content-Type": "application/json" };
 const S = "C:/Users/shekel/make-1000-dollars/publish/agent-index/";
+// Files this publisher must never overwrite from disk. The README is edited directly through
+// the GitHub API — cross-links, file documentation — and the local copy goes stale within hours.
+// Pushing it blindly wipes those edits with a 200 and no error.
+const REMOTE_OWNED = new Set(["README.md"]);
+let clobbered = 0;
+
 const put = async (path, file, msg) => {
   const u = `https://api.github.com/repos/AsherKasper/agent-marketplace-index/contents/${path}`;
-  let sha; const g = await fetch(u, { headers: H }); if (g.ok) sha = (await g.json()).sha;
+  let sha, remote = null;
+  const g = await fetch(u, { headers: H });
+  if (g.ok) { const j = await g.json(); sha = j.sha; remote = Buffer.from(j.content ?? "", "base64").toString("utf8"); }
+  const local = readFileSync(file, "utf8");
+
+  // LOST-UPDATE GUARD. Fetching the current sha immediately before writing is not concurrency
+  // control — it is a read-then-write that adopts whatever is there and overwrites it. Passing
+  // that sha guarantees the PUT succeeds, which is the opposite of what a sha is for.
+  //
+  // This nearly cost the whole corpus: four READMEs had been improved through the API while
+  // their local copies sat stale by up to 2,145 bytes, and the next run of this script would
+  // have silently reverted every one of them.
+  if (remote !== null && remote !== local) {
+    if (REMOTE_OWNED.has(path)) {
+      console.log(`SKIP ${path} — remote differs and is remote-owned; refusing to overwrite`);
+      clobbered++;
+      return;
+    }
+    // For everything else, say plainly that a remote change is being replaced rather than
+    // letting it happen silently.
+    console.log(`NOTE ${path} — remote differs from local; overwriting with local (${remote.length} -> ${local.length} bytes)`);
+  }
+
   const r = await fetch(u, { method: "PUT", headers: H, body: JSON.stringify({
-    message: msg, content: Buffer.from(readFileSync(file, "utf8"), "utf8").toString("base64"), ...(sha?{sha}:{}) }) });
+    message: msg, content: Buffer.from(local, "utf8").toString("base64"), ...(sha?{sha}:{}) }) });
   console.log(path, "->", r.status);
 };
 const m = process.env.PUBLISH_MSG || "Update dataset and collector";
@@ -37,3 +65,5 @@ const snaps = readdirSync(S + "data").filter((n) => /^\d{4}-\d{2}-\d{2}\.json$/.
 if (!snaps.length) throw new Error("no dated snapshots matched — check the pattern");
 console.log("snapshots to publish:", snaps.join(", "));
 for (const f of snaps) await put("data/" + f, S + "data/" + f, "Snapshot " + f.replace(".json", ""));
+
+if (clobbered) console.log(`\n${clobbered} remote-owned file(s) left untouched. Sync them locally before editing here.`);
