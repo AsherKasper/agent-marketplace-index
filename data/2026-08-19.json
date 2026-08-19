@@ -1,0 +1,169 @@
+{
+  "date": "2026-08-19",
+  "generatedBy": "snapshot.mjs",
+  "platforms": [
+    {
+      "platform": "dealwork.ai",
+      "supply": {
+        "count": 1005,
+        "method": "reported-total"
+      },
+      "demand": {
+        "count": 44,
+        "method": "reported-total"
+      },
+      "posted": {
+        "count": 24,
+        "method": "reported-total"
+      },
+      "bidding": {
+        "count": 20,
+        "method": "reported-total"
+      },
+      "completed": {
+        "count": 107,
+        "method": "reported-total"
+      },
+      "genuineRequests": 3,
+      "advertPct": 93.2,
+      "nonEnglishJobs": 1,
+      "agents": {
+        "count": 1699,
+        "method": "reported-total"
+      },
+      "workers": {
+        "count": 2270,
+        "method": "reported-total"
+      },
+      "completedValueUSD": 236.29,
+      "completedMedianUSD": 1,
+      "completedMaxUSD": 50,
+      "completedFreshestDays": 32
+    },
+    {
+      "platform": "toku.agency",
+      "supply": {
+        "count": 3143,
+        "method": "reported-total"
+      },
+      "demand": {
+        "count": 127,
+        "method": "reported-total"
+      },
+      "agents": {
+        "count": 1565,
+        "method": "reported-total"
+      },
+      "jobsCompletedLifetime": 7,
+      "agentsWithCompletions": 6,
+      "bidsPlaced": 4206,
+      "postsWithBids": 127,
+      "bidsPerCompletion": 601,
+      "rosterRead": {
+        "count": 1565,
+        "method": "walked-all-pages"
+      }
+    },
+    {
+      "platform": "opentask.ai",
+      "demand": {
+        "count": 71,
+        "method": "walked-all-pages"
+      }
+    },
+    {
+      "platform": "cantina.xyz",
+      "all": {
+        "count": 144,
+        "method": "full-list"
+      },
+      "live": {
+        "count": 1,
+        "method": "full-list"
+      },
+      "liveNoKyc": {
+        "count": 0,
+        "method": "full-list"
+      },
+      "livePotUSD": 30000
+    },
+    {
+      "platform": "sherlock.xyz",
+      "all": {
+        "count": 301,
+        "method": "reported-total"
+      },
+      "judgingOnPage1": {
+        "count": 2,
+        "method": "first-page-only"
+      }
+    },
+    {
+      "platform": "execution.market",
+      "tasksEver": {
+        "count": 3922,
+        "method": "platform-metrics"
+      },
+      "expired": 1891,
+      "cancelled": 689,
+      "completionRatePct": 33.5,
+      "tasksListed": {
+        "count": 1337,
+        "method": "walked-all-pages; EXCLUDES expired+cancelled"
+      },
+      "tasksCompleted": {
+        "count": 1314,
+        "method": "walked-all-pages"
+      },
+      "paidLifetimeUSD": 58.71,
+      "testTasks": 224,
+      "testPaidUSD": 21.98,
+      "realPaidUSD": 36.73,
+      "medianCompletedUSD": 0.02,
+      "maxCompletedUSD": 1,
+      "published": {
+        "count": 7,
+        "method": "walked-all-pages"
+      },
+      "publishedUSD": 0.12,
+      "services": {
+        "count": 86,
+        "method": "full-list"
+      },
+      "serviceOrders": 89,
+      "serviceGrossUSD": 1.08,
+      "maxSoldPriceUSD": 0.1
+    },
+    {
+      "platform": "x402 (agentic.market)",
+      "services": {
+        "count": 2270,
+        "method": "walked-all-pages"
+      },
+      "servicesWithCalls": {
+        "count": 1490,
+        "method": "walked-all-pages"
+      },
+      "calls30d": 296444,
+      "gross30dUSD": 17926.64,
+      "gross30dExOutliersUSD": 9926.64,
+      "gross30dServiceAvgMethodUSD": 17795.34,
+      "medianPriceUSD": 0.0085,
+      "endpointsTotal": 28255,
+      "endpointsWithCalls": {
+        "count": 13936,
+        "method": "walked-all-pages"
+      },
+      "currencies": [
+        "USDC"
+      ],
+      "usdcCallSharePct": 100
+    }
+  ],
+  "headline": {
+    "metric": "sellers per buyer",
+    "dealwork": 22.8,
+    "toku": 24.7,
+    "note": "demand counts all jobs ever posted; dealwork also reports an open-only figure"
+  }
+}
